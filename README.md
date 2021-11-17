@@ -1,3 +1,3 @@
-# Deployment
+# WISdoM OSS Deployment
+This article should help you deploying the current live(main) software.
 
-This Repository contains all information and documentation about the deployment process of the Interface and its backgroud services

@@ -24,3 +24,81 @@ The following packages need to be installed on the machine
 - Git
 - Docker
 - Docker Compose
+## 1. Installation of [Docker]() and [Docker Compose]() {#docker-install}
+
+> **ATTENTION**  
+> Do not attempt to run the commands written here as the user `root`. Please 
+> use `sudo` for running elevated commands.
+
+### Step 1 - Upgrade all system packages to the newest version {#docker-install-step1}
+
+To successfully install docker. Please ensure that all system packages are 
+upgraded to their newest version.  
+```bash
+sudo apt-get update # Get the current package lists
+sudo apt-get dist-upgrade # Upgrade all packages to their newest version
+# Optional:
+sudo apt-get autoremove # Remove all packages currently not needed
+```
+
+### Step 2 - Remove old version of the Docker Engine and CLI {#docker-install-step2}
+
+This step is needed to maintain the compatibility with the current releases
+for docker. None of the packages may be installed on your system. To make sure
+they are not installed you should run the following command. If `apt-get`
+reports that none of the packages are found or returns an error for this you
+can ignore it.
+```bash
+sudo apt-get remove docker docker-engine docker.io containerd runc
+```
+### Step 3 - Installing the Docker Engine and Docker Compose {#docker-install-step3}
+You now have the choice between using the convenience script supplied by
+Docker Inc or doing some of the steps manually.
+
+#### Step 3.1 - Using the convenience script {#docker-install-step3.1}
+
+> * This script needs to be executed by `root` or with `sudo` privileges
+> * The script is only designed for making a very first installation of
+>   Docker on the machine
+
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh # Download the convenience script
+sudo sh get-docker.sh # Run the convenience script
+```
+
+#### Step 3.2 - Manually installing docker {#docker-install-step3.2}
+
+1. Update the package index
+    ```bash
+    sudo apt-get update
+    ```
+2. Install HTTPS support for apt
+   > Depending on your base installation some or all packages may be installed
+   > already. The command will skip already installed packages.
+   ```bash
+   sudo apt-get install \
+   ca-certificates \
+   curl \
+   gnupg \
+   lsb-release
+   ```
+3. Add Docker's GPG key
+   ```bash
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+   sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+   ```
+4. Add the docker repository to the apt sources
+   ```bash
+   echo \
+   "deb [arch=$(dpkg --print-architecture) \
+   signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+   https://download.docker.com/linux/ubuntu \
+   $(lsb-release -cs) stable" | \
+   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+   ```
+5. Install the Docker Engine
+   ```bash
+   sudo apt-get update # Update the package sources
+   sudo apt-get install docker-ce docker-ce-cli containerd.io # Install the packages needed for Docker
+   ```
+

@@ -24,6 +24,7 @@ The following packages need to be installed on the machine
 - Git
 - Docker
 - Docker Compose
+
 ## 1. Installation of [Docker]() and [Docker Compose]() {#docker-install}
 
 > **ATTENTION**  
@@ -102,3 +103,39 @@ sudo sh get-docker.sh # Run the convenience script
    sudo apt-get install docker-ce docker-ce-cli containerd.io # Install the packages needed for Docker
    ```
 
+## 2. Get the files for the deployment {#get-files}
+
+### 2.1 - Download the files to your computer and upload them to the server {#get-files-option1}
+
+> **Note**  
+> When using this method you will need to update your installation manually 
+> every time a new version of the deployment files is released. To enable a
+> more automatized update process and enable revert features use the [second
+> method](#get-files-option2)
+
+
+After successfully installing the Docker Engine and Docker Compose you now need
+to download this repository to your server. Use one of the following links to 
+download the repository and its contents as:  
+- [IP archive](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.zip) 
+- [Tarball with gzip](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar.gz)
+- [Tarball with bzip2](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar.bz2)
+- [Tarball](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar)
+
+After downloading the archive please decompress it and upload it to your server
+in a location you have read/write permission.
+
+### 2.2 - Download the files directly onto the server _(Recommended)_ {#get-files-option2}
+
+1. Login onto your server via `ssh` or by other means.
+2. Create a new directory for the files
+   ```bash
+   sudo mkdir -p /opt/wisdom-oss
+   ```
+3. Download the repository contents to the server
+   ```bash
+   cd /opt/wisdom-oss # Change into the directory for the files
+   sudo git clone https://gitlab.uni-oldenburg.de/wisdom-oss/deployment.git . # Clone this repository
+   ```
+   > During the cloning of the repository you may be asked to enter your 
+   > credentials. If this is the case please contact us [via mail](mailto:wisdom@uol.de)

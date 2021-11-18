@@ -161,4 +161,8 @@ After setting the password you now need to change back into the
 sudo docker-compose -p "wisdom-oss" up -d
 ```
 This command will pull all images and create containers with the images 
-specified in the `docker-compose.yml` file.
+specified in the `docker-compose.yml` file. If the compose file contains
+a git repository it will pull the `main` branch of the repository and try
+to build an image with the `Dockerfile` at the root level. This is done for
+modules which are still in early development stages and not released in a 
+Docker repository.

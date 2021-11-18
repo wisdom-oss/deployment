@@ -103,6 +103,18 @@ sudo sh get-docker.sh # Run the convenience script
    sudo apt-get install docker-ce docker-ce-cli containerd.io # Install the packages needed for Docker
    ```
 
+### Step 4 - Install Docker Compose
+1. Download the plugin for the docker cli
+   ```bash
+   sudo mkdir -p /usr/local/lib/docker/cli-plugins
+   sudo curl -SL https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-linux-x86_64 \
+   -o /usr/local/lib/docker/cli-plugins/docker-compose
+   ```
+2. Apply executable permissions to the binary
+   ```bash
+   sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+   ```
+
 ## 2. Get the files for the deployment {#get-files}
 
 ### 2.1 - Download the files to your computer and upload them to the server {#get-files-option1}
@@ -117,10 +129,10 @@ sudo sh get-docker.sh # Run the convenience script
 After successfully installing the Docker Engine and Docker Compose you now need
 to download this repository to your server. Use one of the following links to 
 download the repository and its contents as:  
-- [IP archive](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.zip) 
-- [Tarball with gzip](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar.gz)
-- [Tarball with bzip2](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar.bz2)
-- [Tarball](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar)
+- [ZIP archive](https://github.com/wisdom-oss/deployment/archive/refs/heads/main.zip) 
+- [Tarball with gzip](https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar.gz)
+- [Tarball with bzip2](https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar.bz2)
+- [Tarball](https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar)
 
 After downloading the archive please decompress it and upload it to your server
 in a location you have read/write permission.
@@ -135,7 +147,7 @@ in a location you have read/write permission.
 3. Download the repository contents to the server
    ```bash
    cd /opt/wisdom-oss # Change into the directory for the files
-   sudo git clone https://gitlab.uni-oldenburg.de/wisdom-oss/deployment.git . # Clone this repository
+   sudo git clone https://github.com/wisdom-oss/deployment.git . # Clone this repository
    ```
    > During the cloning of the repository you may be asked to enter your 
    > credentials. If this is the case please contact us [via mail](mailto:wisdom@uol.de)
@@ -158,7 +170,7 @@ The passwords you need to enter are in the following files:
 After setting the password you now need to change back into the 
 `/opt/wisdom-oss` folder. Now run the following command in your terminal
 ```bash
-sudo docker-compose -p "wisdom-oss" up -d
+sudo docker compose -p "wisdom-oss" up -d
 ```
 This command will pull all images and create containers with the images 
 specified in the `docker-compose.yml` file. If the compose file contains

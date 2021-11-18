@@ -1,0 +1,48 @@
+version: '3.8'
+
+# Named volumes
+volumes:
+  mariadb_data:
+
+# Networking Setup
+networks:
+  default:
+    name: wisdom-oss
+    driver: bridge
+
+# Base Services for using the Product
+services:
+  message-broker:
+    image: rabbitmq:3.9.9-management-alpine
+    restart: always
+    expose:
+      - 5672
+
+  database:
+    image: mariadb:10.6.4-focal
+    restart: always
+    expose:
+      - 3306
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - ./data/mariadb/:/docker-entrypoint-initdb.d/
+      - mariadb_data:/var/lib/mysql
+
+  authorization-service:
+    build: 
+      context: https://github.com/wisdom-oss/authorization-service.git#main
+    ports:
+      - "8090:5000"
+    environment:
+      - SQLALCHEMY_DATABASE_URL="mariadb+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization"
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    depends_on:
+      - database
+    environment:
+      - PMA_HOST=database

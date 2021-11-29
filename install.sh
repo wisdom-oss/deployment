@@ -63,7 +63,7 @@ not work or will brick your current installation requiring a complete
 re-installation of your operating system${nocolor}"
 
 echo -en "${orange}Do you wish to continue with the installation and setup? (y/N): ${nocolor}"
-read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] ||  exit 1;
+read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] ||  exit 1
 clear
 
 echo -e "${lightcyan}1.1 Updating the package index${nocolor}\n"
@@ -105,7 +105,7 @@ $sudo apt-get -q update
 echo -e "\n${green}✅ Updated the package sources${nocolor}\n"
 
 echo -e "${cyan}2.5 Installing the Docker Engine and the Docker CLI${nocolor}\n"
-$sudo apt-get -q -y docker-ce docker-ce-cli containerd.io
+$sudo apt-get -q -y install docker-ce docker-ce-cli containerd.io
 echo -e "\n${green}✅ Installed the Docker Engine and the Docker CLI${nocolor}\n"
 
 echo -e "${cyan}2.6 Installing Docker Compose (v2)${nocolor}\n"

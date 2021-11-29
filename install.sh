@@ -63,7 +63,7 @@ not work or will brick your current installation requiring a complete
 re-installation of your operating system${nocolor}"
 
 echo -en "${orange}Do you wish to continue with the installation and setup? (y/N): ${nocolor}"
-read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] || (echo -e "${red}Exiting the script ${nocolor}" && exit 1)
+read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] ||  exit 1;
 clear
 
 echo -e "${lightcyan}1.1 Updating the package index${nocolor}\n"

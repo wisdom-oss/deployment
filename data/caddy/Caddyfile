@@ -1,0 +1,8 @@
+{
+  email webmaster@example.com
+  auto_https off
+}
+
+http://localhost {
+  reverse_proxy /api/* api-gateway:8090
+}

@@ -4,7 +4,7 @@ This article should help you deploying the current live(main) software.
 ## Currently Active Modules
 - Main Routing Proxy (based on [Caddy](https://caddyserver.com/))
 - API Gateway (Spring Cloud Gateway)
-- Authorization Service (Self-written Python Service)
+- Authorization Service (Python Service)
 
 ## Requirements {#requirements}
 > **Important Note**  
@@ -13,9 +13,9 @@ This article should help you deploying the current live(main) software.
 > on a PC with the Windows Subsystem for Linux enabled.  
 > _However_, a completely virtualized Ubuntu Server is supported by the System
 
-OS: Ubuntu Server 20.4 LTS  
-Memory: 16GB RAM, _Recommended: 32GB_  
-Storage: Minimum: 100GB 
+OS: Ubuntu Server 20.4 LTS<br>
+Memory: 16GB RAM, _Recommended: 32GB_<br>
+Storage: Minimum: 100GB
 > This data is currently based on the only system available for testing. 
 > Therefore these values are not meaningful at the moment. This note
 > will be removed once the values are found and tested
@@ -25,7 +25,17 @@ The following packages need to be installed on the machine
 - Docker
 - Docker Compose
 
-## 1. Installation of [Docker]() and [Docker Compose]() {#docker-install}
+## Automatic installation
+
+To install the system automatically at the current state you may use the following command
+```bash
+curl -fsSL https://github.com/wisdom-oss/deployment/ -o get-wisdom-oss.sh
+bash get-wisdom-oss.sh
+```
+
+## 1. Installation of [Docker](https://docs.docker.com/engine/install/ubuntu/) and [Docker Compose]() {#docker-install}
+> Source: https://docs.docker.com/engine/install/ubuntu/
+
 
 > **ATTENTION**  
 > Do not attempt to run the commands written here as the user `root`. Please 

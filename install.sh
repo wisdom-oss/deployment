@@ -114,4 +114,5 @@ $sudo curl -SL https://github.com/docker/compose/releases/download/v2.0.1/docker
 $sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 echo -e "\n${green}✅ Installed Docker Compose${nocolor}\n"
 
-echo -e "${lightpurple}LICENSE INFORMATION${normal}"
+echo -e "${red}LICENSE INFORMATION"
+echo -e "The software deployed with this file currently has a proprietary license.${normal}"

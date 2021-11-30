@@ -34,10 +34,10 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 
 ROOT_DIRECTORY="/opt/wisdom-oss"
+BRANCH="compose-data"
 
 # Mapping of passwords which shall be generated and in which file it may be needed
 password_blanks=(["auth-service"]="gen-pass-auth-service")
-password_files=(["auth-service"]="./data/mariadb/001-create-auth-user.sql")
 
 # Location of the docker-compose file relative to the current directory
 compose_file_location="./docker-compose.yml"
@@ -120,6 +120,43 @@ echo -en "${orange}Do you wish to continue with the deployment? (y/N): ${nocolor
 read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] ||  exit 1
 
 echo -e "${lightblue}Downloading files for WISdoM OSS Version${normal}"
-wget -O wisdom-oss.tar.gz https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar.gz
+wget -q -O wisdom-oss.tar.gz "https://github.com/wisdom-oss/deployment/archive/refs/heads/${BRANCH}.tar.gz"
+echo -e "${lightblue}Extracting files for WISdoM OSS Version${normal}"
 $sudo mkdir -p $ROOT_DIRECTORY
-$sudo tar --exclude "install.sh" -C $ROOT_DIRECTORY -xvf wisdom-oss.tar.gz
+$sudo tar --strip-components=1 --exclude "install.sh" -C $ROOT_DIRECTORY -xvf wisdom-oss.tar.gz
+cd $ROOT_DIRECTORY || exit
+echo -en "${orange}Do you wish automatically generate secure passwords? (Y/n): ${nocolor}"
+read -r confirm 
+if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
+then
+  echo -e "${lightgreen}Generating passwords with openssl${normal}"
+  for password_field in ${password_blanks[*]}
+  do
+    sed -i "s,<<${password_field}>>,$(openssl rand -base64 18),g" ./*
+  done
+  echo -e "\n${green}✅ Generated passwords${nocolor}\n"
+else
+  echo -e "${red}No passwords generated!${nocolor}"
+  echo -e "Please replace the following strings with passwords of your choice:"
+  for password_field in ${password_blanks[*]}
+  do
+    echo "<<${password_field}>>"
+  done
+  exit 0
+fi
+
+  echo -e "\n${green}✅ Ready for startup${nocolor}\n"
+echo -en "${orange}Do you wish start the containers? (Y/n): ${nocolor}"
+read -r confirm
+if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
+then
+  echo -e "\n${lightblue}Starting the containers${nocolor}\n"
+  $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
+  echo -e "\n${green}✅ Started the containers${nocolor}\n"
+  exit 0
+else
+  echo -e "Please execute the following command to spin up the containers later:\n"
+  echo -e "sudo docker compose -f $(pwd)/docker-compose.yml up -d"
+  exit 0
+fi
+

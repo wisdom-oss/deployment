@@ -116,3 +116,8 @@ echo -e "\n${green}✅ Installed Docker Compose${nocolor}\n"
 
 echo -e "${red}LICENSE INFORMATION"
 echo -e "The software deployed with this file currently has a proprietary license.${normal}"
+echo -en "${orange}Do you wish to continue with the deployment? (y/N): ${nocolor}"
+read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] ||  exit 1
+
+echo -e "${lightblue}Downloading files for WISdoM OSS Version${normal}"
+wget -O wisdom-oss.tar.gz https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar.gz

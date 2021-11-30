@@ -113,3 +113,5 @@ $sudo mkdir -p /usr/local/lib/docker/cli-plugins
 $sudo curl -SL https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
 $sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 echo -e "\n${green}✅ Installed Docker Compose${nocolor}\n"
+
+echo -e "${lightpurple}LICENSE INFORMATION${normal}"

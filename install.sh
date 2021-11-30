@@ -121,4 +121,5 @@ read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] ||  exit 1
 
 echo -e "${lightblue}Downloading files for WISdoM OSS Version${normal}"
 wget -O wisdom-oss.tar.gz https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar.gz
-$sudo tar --exclude "install.sh" -C /opt/wisdom-oss -xvf wisdom-oss.tar.gz
+$sudo mkdir -p $ROOT_DIRECTORY
+$sudo tar --exclude "install.sh" -C $ROOT_DIRECTORY -xvf wisdom-oss.tar.gz

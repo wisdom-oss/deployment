@@ -3,6 +3,10 @@ version: '3.8'
 # Named volumes
 volumes:
   mariadb_data:
+    external: true
+  caddy_data:
+    external: true
+  caddy_config:
 
 # Networking Setup
 networks:
@@ -12,11 +16,25 @@ networks:
 
 # Base Services for using the Product
 services:
+  reverse-proxy:
+    image: caddy:2.4.6-alpine
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - api-gateway
+    volumes:
+      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    
   message-broker:
     image: rabbitmq:3.9.9-management-alpine
     restart: always
     expose:
       - 5672
+      - 15672
 
   database:
     image: mariadb:10.6.4-focal
@@ -29,12 +47,34 @@ services:
       - ./data/mariadb/:/docker-entrypoint-initdb.d/
       - mariadb_data:/var/lib/mysql
 
+  service-registry:
+    build:
+      context: https://github.com/wisdom-oss/service-registry.git#main
+    image: wisdom-oss/service-registry:main-latest
+    expose:
+      - 8761
+    hostname: service-registry
+
+  api-gateway:
+    build:
+      context: https://github.com/wisdom-oss/api-gateway.git#main
+    image: wisdom-oss/api-gateway:main-latest
+    expose:
+      - 8090
+    depends_on:
+      - service-registry
+    environment:
+      SPRING_ACTIVE_PROFILES: production
+      SERVICE_REGISTRY_HOSTNAME: service-registry
+
   authorization-service:
     build: 
       context: https://github.com/wisdom-oss/authorization-service.git#main
-    image: wisdom.uol.de/authorization-service
-    ports:
-      - "8090:5000"
+    image: wisdom-oss/authorization-service:main-latest
+    depends_on:
+      - api-gateway
+    expose:
+      - 5000
     environment:
       - SQLALCHEMY_DATABASE_URL="mariadb+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization"
 

@@ -37,7 +37,7 @@ ROOT_DIRECTORY="/opt/wisdom-oss"
 BRANCH="compose-data"
 
 # Mapping of passwords which shall be generated and in which file it may be needed
-password_blanks=(["auth-service"]="gen-pass-auth-service")
+password_blanks=("gen-pass-auth-service")
 
 # Location of the docker-compose file relative to the current directory
 compose_file_location="./docker-compose.yml"
@@ -130,7 +130,7 @@ read -r confirm
 if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
 then
   echo -e "${lightgreen}Generating passwords with openssl${normal}"
-  for password_field in ${password_blanks[*]}
+  for password_field in "${password_blanks[@]}"
   do
     sed -i "s,<<${password_field}>>,$(openssl rand -base64 18),g" ./*
   done
@@ -138,7 +138,7 @@ then
 else
   echo -e "${red}No passwords generated!${nocolor}"
   echo -e "Please replace the following strings with passwords of your choice:"
-  for password_field in ${password_blanks[*]}
+  for password_field in "${password_blanks[@]}"
   do
     echo "<<${password_field}>>"
   done

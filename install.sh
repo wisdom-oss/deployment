@@ -162,6 +162,8 @@ then
   $sudo sed -i "s,<<hostname>>,$hostname,g" data/caddy/Caddyfile
   echo -e "\n${lightblue}Starting the containers${nocolor}\n"
   $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
+  sleep 30s
+  $sudo docker restart wisdom-oss-api-gateway-1
   echo -e "\n${green}✅ Started the containers${nocolor}\n"
   exit 0
 else

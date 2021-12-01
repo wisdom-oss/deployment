@@ -48,7 +48,7 @@ sudo=''
 #==================================================================================================
 # Checking for sudo privileges and prepending sudo if needed to every command
 if [[ $(id -u) -ne 0 ]]; then
-  sudo='sudo'
+  sudo='sudo -E'
 fi
 
 echo -e "${lightcyan}Welcome to the WISdoM OSS Project${nocolor}
@@ -114,6 +114,10 @@ $sudo curl -SL https://github.com/docker/compose/releases/download/v2.0.1/docker
 $sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 echo -e "\n${green}✅ Installed Docker Compose${nocolor}\n"
 
+echo -e "${cyan}2.7 Activating BuildKit for Docker${normal}"
+echo '{ "features": { "buildkit": true } }' | $sudo tee /etc/docker/daemon.json
+$sudo service docker restart
+
 echo -e "${red}LICENSE INFORMATION"
 echo -e "The software deployed with this file currently has a proprietary license.${normal}"
 echo -en "${orange}Do you wish to continue with the deployment? (y/N): ${nocolor}"
@@ -132,7 +136,7 @@ then
   echo -e "${lightgreen}Generating passwords with openssl${normal}"
   for password_field in "${password_blanks[@]}"
   do
-    sed -i "s,<<${password_field}>>,$(openssl rand -base64 18),g" ./*
+    find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(openssl rand -base64 18),g" {} \;
   done
   echo -e "\n${green}✅ Generated passwords${nocolor}\n"
 else
@@ -140,7 +144,7 @@ else
   echo -e "Please replace the following strings with passwords of your choice:"
   for password_field in "${password_blanks[@]}"
   do
-    echo "<<${password_field}>>"
+    echo "<<$password_field>>"
   done
   exit 0
 fi
@@ -151,7 +155,7 @@ read -r confirm
 if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
 then
   echo -e "\n${lightblue}Starting the containers${nocolor}\n"
-  $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
+  BUILDKIT_PROGRESS=plain $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
   echo -e "\n${green}✅ Started the containers${nocolor}\n"
   exit 0
 else

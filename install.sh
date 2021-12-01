@@ -154,6 +154,8 @@ echo -en "${orange}Do you wish start the containers? (Y/n): ${nocolor}"
 read -r confirm
 if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
 then
+  read -rp "Hostname des Servers: " hostname
+  $sudo sed -i "s,<<hostname>>,$hostname,g" data/caddy/Caddyfile
   echo -e "\n${lightblue}Starting the containers${nocolor}\n"
   BUILDKIT_PROGRESS=plain $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
   echo -e "\n${green}✅ Started the containers${nocolor}\n"

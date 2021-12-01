@@ -87,7 +87,8 @@ $sudo apt-get -q -y install \
   ca-certificates \
   curl \
   gnupg \
-  lsb-release
+  lsb-release \
+  unzip
 echo -e "\n${green}✅ Installed dependencies for Docker Engine${nocolor}\n"
 
 echo -e "${cyan}2.3 Adding the signing key of the docker engine repository${nocolor}\n"
@@ -124,10 +125,13 @@ echo -en "${orange}Do you wish to continue with the deployment? (y/N): ${nocolor
 read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] ||  exit 1
 
 echo -e "${lightblue}Downloading files for WISdoM OSS Version${normal}"
-wget -q -O wisdom-oss.tar.gz "https://github.com/wisdom-oss/deployment/archive/refs/heads/${BRANCH}.tar.gz"
-echo -e "${lightblue}Extracting files for WISdoM OSS Version${normal}"
 $sudo mkdir -p $ROOT_DIRECTORY
-$sudo tar --strip-components=1 --exclude "install.sh" --exclude "*.md" -C $ROOT_DIRECTORY -xf wisdom-oss.tar.gz
+cd $ROOT_DIRECTORY
+wget -q -O wisdom-oss.zip "https://codeload.github.com/wisdom-oss/deployment/zip/refs/heads/main"
+echo -e "${lightblue}Extracting files for WISdoM OSS Version${normal}"
+$sudo unzip wisdom-oss.zip -d $ROOT_DIRECTORY
+$sudo mv deployment-main/* .
+$sudo rm -r deployment-main wisdom-oss.zip
 cd $ROOT_DIRECTORY || exit
 echo -en "${orange}Do you wish automatically generate secure passwords? (Y/n): ${nocolor}"
 read -r confirm 
@@ -157,7 +161,7 @@ then
   read -rp "Hostname des Servers: " hostname
   $sudo sed -i "s,<<hostname>>,$hostname,g" data/caddy/Caddyfile
   echo -e "\n${lightblue}Starting the containers${nocolor}\n"
-  BUILDKIT_PROGRESS=plain $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
+  $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
   echo -e "\n${green}✅ Started the containers${nocolor}\n"
   exit 0
 else

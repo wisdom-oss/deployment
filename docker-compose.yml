@@ -1,0 +1,89 @@
+version: '3.8'
+
+# Named volumes
+volumes:
+  mariadb_data:
+    external: true
+  caddy_data:
+    external: true
+  caddy_config:
+
+# Networking Setup
+networks:
+  default:
+    name: wisdom-oss
+    driver: bridge
+
+# Base Services for using the Product
+services:
+  reverse-proxy:
+    image: caddy:2.4.6-alpine
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - api-gateway
+    volumes:
+      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    
+  message-broker:
+    image: rabbitmq:3.9.9-management-alpine
+    restart: always
+    expose:
+      - 5672
+      - 15672
+
+  database:
+    image: mariadb:10.6.4-focal
+    restart: always
+    expose:
+      - 3306
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - ./data/mariadb/:/docker-entrypoint-initdb.d/
+      - mariadb_data:/var/lib/mysql
+
+  service-registry:
+    build: https://github.com/wisdom-oss/service-registry.git#main
+    image: wisdom-oss/service-registry:main-latest
+    expose:
+      - 8761
+    hostname: service-registry
+
+  api-gateway:
+    build: https://github.com/wisdom-oss/api-gateway.git#main
+    image: wisdom-oss/api-gateway:main-latest
+    hostname: 
+      api-gateway
+    expose:
+      - 8090
+    depends_on:
+      - service-registry
+    environment:
+      SPRING_ACTIVE_PROFILES: production
+      SERVICE_REGISTRY_HOSTNAME: service-registry
+
+  authorization-service:
+    build: https://github.com/wisdom-oss/authorization-service.git#main
+    image: wisdom-oss/authorization-service:main-latest
+    depends_on:
+      - api-gateway
+      - database
+    expose:
+      - 5000
+    environment:
+      - SQLALCHEMY_DATABASE_URL=mysql+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    depends_on:
+      - database
+    environment:
+      - PMA_HOST=database

@@ -4,7 +4,7 @@ This article should help you deploying the current live(main) software.
 ## Currently Active Modules
 - Main Routing Proxy (based on [Caddy](https://caddyserver.com/))
 - API Gateway (Spring Cloud Gateway)
-- Authorization Service (Self-written Python Service)
+- Authorization Service (Python Service)
 
 ## Requirements {#requirements}
 > **Important Note**  
@@ -13,9 +13,9 @@ This article should help you deploying the current live(main) software.
 > on a PC with the Windows Subsystem for Linux enabled.  
 > _However_, a completely virtualized Ubuntu Server is supported by the System
 
-OS: Ubuntu Server 20.4 LTS  
-Memory: 16GB RAM, _Recommended: 32GB_  
-Storage: Minimum: 100GB 
+OS: Ubuntu Server 20.4 LTS<br>
+Memory: 16GB RAM, _Recommended: 32GB_<br>
+Storage: Minimum: 100GB
 > This data is currently based on the only system available for testing. 
 > Therefore these values are not meaningful at the moment. This note
 > will be removed once the values are found and tested
@@ -25,7 +25,17 @@ The following packages need to be installed on the machine
 - Docker
 - Docker Compose
 
-## 1. Installation of [Docker]() and [Docker Compose]() {#docker-install}
+## Automatic installation
+
+To install the system automatically at the current state you may use the following command
+```bash
+curl -fsSL https://github.com/wisdom-oss/deployment/ -o get-wisdom-oss.sh
+bash get-wisdom-oss.sh
+```
+
+## 1. Installation of [Docker](https://docs.docker.com/engine/install/ubuntu/) and [Docker Compose]() {#docker-install}
+> Source: https://docs.docker.com/engine/install/ubuntu/
+
 
 > **ATTENTION**  
 > Do not attempt to run the commands written here as the user `root`. Please 
@@ -103,6 +113,18 @@ sudo sh get-docker.sh # Run the convenience script
    sudo apt-get install docker-ce docker-ce-cli containerd.io # Install the packages needed for Docker
    ```
 
+### Step 4 - Install Docker Compose
+1. Download the plugin for the docker cli
+   ```bash
+   sudo mkdir -p /usr/local/lib/docker/cli-plugins
+   sudo curl -SL https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-linux-x86_64 \
+   -o /usr/local/lib/docker/cli-plugins/docker-compose
+   ```
+2. Apply executable permissions to the binary
+   ```bash
+   sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+   ```
+
 ## 2. Get the files for the deployment {#get-files}
 
 ### 2.1 - Download the files to your computer and upload them to the server {#get-files-option1}
@@ -117,10 +139,10 @@ sudo sh get-docker.sh # Run the convenience script
 After successfully installing the Docker Engine and Docker Compose you now need
 to download this repository to your server. Use one of the following links to 
 download the repository and its contents as:  
-- [IP archive](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.zip) 
-- [Tarball with gzip](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar.gz)
-- [Tarball with bzip2](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar.bz2)
-- [Tarball](https://gitlab.uni-oldenburg.de/wisdom-oss/deployment/-/archive/main/deployment-main.tar)
+- [ZIP archive](https://github.com/wisdom-oss/deployment/archive/refs/heads/main.zip) 
+- [Tarball with gzip](https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar.gz)
+- [Tarball with bzip2](https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar.bz2)
+- [Tarball](https://github.com/wisdom-oss/deployment/archive/refs/heads/main.tar)
 
 After downloading the archive please decompress it and upload it to your server
 in a location you have read/write permission.
@@ -135,7 +157,7 @@ in a location you have read/write permission.
 3. Download the repository contents to the server
    ```bash
    cd /opt/wisdom-oss # Change into the directory for the files
-   sudo git clone https://gitlab.uni-oldenburg.de/wisdom-oss/deployment.git . # Clone this repository
+   sudo git clone https://github.com/wisdom-oss/deployment.git . # Clone this repository
    ```
    > During the cloning of the repository you may be asked to enter your 
    > credentials. If this is the case please contact us [via mail](mailto:wisdom@uol.de)
@@ -158,7 +180,7 @@ The passwords you need to enter are in the following files:
 After setting the password you now need to change back into the 
 `/opt/wisdom-oss` folder. Now run the following command in your terminal
 ```bash
-sudo docker-compose -p "wisdom-oss" up -d
+sudo docker compose -p "wisdom-oss" up -d
 ```
 This command will pull all images and create containers with the images 
 specified in the `docker-compose.yml` file. If the compose file contains

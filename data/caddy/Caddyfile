@@ -1,6 +1,7 @@
 {  
-  auto_https disable_redirects
-  email webmaster@example.com
+  auto_https off
 }
 
-reverse_proxy /api/* api-gateway:8090
+reverse_proxy /api/* http://api-gateway:8090
+
+respond "Hello"

@@ -75,7 +75,7 @@ services:
     expose:
       - 5000
     environment:
-      - SQLALCHEMY_DATABASE_URL=mariadb+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization
+      - SQLALCHEMY_DATABASE_URL=mysql+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization
 
   phpmyadmin:
     image: phpmyadmin

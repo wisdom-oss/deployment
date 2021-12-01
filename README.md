@@ -29,12 +29,12 @@ The following packages need to be installed on the machine
 
 To install the system automatically at the current state you may use the following command
 ```bash
-curl -fsSL https://github.com/wisdom-oss/deployment/ -o get-wisdom-oss.sh
-bash get-wisdom-oss.sh
+curl -fsSL https://raw.githubusercontent.com/wisdom-oss/deployment/main/install.sh -o get-wisdom-oss.sh
+sudo bash get-wisdom-oss.sh
 ```
 
-## 1. Installation of [Docker](https://docs.docker.com/engine/install/ubuntu/) and [Docker Compose]() {#docker-install}
-> Source: https://docs.docker.com/engine/install/ubuntu/
+## 1. Installation of [Docker](https://docs.docker.com/engine/install/ubuntu/) and [Docker Compose](https://docs.docker.com/compose/cli-command/) {#docker-install}
+> Source: https://docs.docker.com/engine/install/ubuntu/, https://docs.docker.com/compose/cli-command/
 
 
 > **ATTENTION**  

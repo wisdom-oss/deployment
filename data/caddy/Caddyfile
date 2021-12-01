@@ -2,6 +2,8 @@
   auto_https off
 }
 
-reverse_proxy /api/* http://api-gateway:8090
+http:// {
+  reverse_proxy /api/* http://api-gateway:8090
+  respond "Hello"
+}
 
-respond "Hello"

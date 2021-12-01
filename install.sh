@@ -34,7 +34,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 
 ROOT_DIRECTORY="/opt/wisdom-oss"
-BRANCH="compose-data"
+BRANCH="main"
 
 # Mapping of passwords which shall be generated and in which file it may be needed
 password_blanks=("gen-pass-auth-service")

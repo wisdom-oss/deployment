@@ -127,7 +127,7 @@ echo -e "${lightblue}Downloading files for WISdoM OSS Version${normal}"
 wget -q -O wisdom-oss.tar.gz "https://github.com/wisdom-oss/deployment/archive/refs/heads/${BRANCH}.tar.gz"
 echo -e "${lightblue}Extracting files for WISdoM OSS Version${normal}"
 $sudo mkdir -p $ROOT_DIRECTORY
-$sudo tar --strip-components=1 --exclude "install.sh" -C $ROOT_DIRECTORY -xvf wisdom-oss.tar.gz
+$sudo tar --strip-components=1 --exclude "install.sh" --exclude "*.md" -C $ROOT_DIRECTORY -xf wisdom-oss.tar.gz
 cd $ROOT_DIRECTORY || exit
 echo -en "${orange}Do you wish automatically generate secure passwords? (Y/n): ${nocolor}"
 read -r confirm 
@@ -149,7 +149,7 @@ else
   exit 0
 fi
 
-  echo -e "\n${green}✅ Ready for startup${nocolor}\n"
+echo -e "\n${green}✅ Ready for startup${nocolor}\n"
 echo -en "${orange}Do you wish start the containers? (Y/n): ${nocolor}"
 read -r confirm
 if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]

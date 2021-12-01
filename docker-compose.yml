@@ -72,6 +72,7 @@ services:
     image: wisdom-oss/authorization-service:main-latest
     depends_on:
       - api-gateway
+      - database
     expose:
       - 5000
     environment:

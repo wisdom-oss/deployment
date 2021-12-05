@@ -119,14 +119,14 @@ echo -e "${cyan}2.7 Activating BuildKit for Docker${normal}"
 echo '{ "features": { "buildkit": true } }' | $sudo tee /etc/docker/daemon.json
 $sudo service docker restart
 
-echo -e "${red}LICENSE INFORMATION"
-echo -e "The software deployed with this file currently has a proprietary license.${normal}"
+echo -e "${red}LICENSE INFORMATION${normal}"
+echo -e "The software deployed with this file currently has a proprietary license."
 echo -en "${orange}Do you wish to continue with the deployment? (y/N): ${nocolor}"
 read -r confirm && [[ $confirm == [yY] || $confirm == [yY][eE][sS] ]] ||  exit 1
 
 echo -e "${lightblue}Downloading files for WISdoM OSS Version${normal}"
 $sudo mkdir -p $ROOT_DIRECTORY
-cd $ROOT_DIRECTORY
+cd $ROOT_DIRECTORY || exit 1
 wget -q -O wisdom-oss.zip "https://codeload.github.com/wisdom-oss/deployment/zip/refs/heads/main"
 echo -e "${lightblue}Extracting files for WISdoM OSS Version${normal}"
 $sudo unzip wisdom-oss.zip -d $ROOT_DIRECTORY

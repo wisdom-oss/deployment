@@ -17,7 +17,8 @@ networks:
 # Base Services for using the Product
 services:
   reverse-proxy:
-    image: caddy:2.4.6-alpine
+    build: ./data/caddy/
+    image: caddy:2.4.6-with-docker-proxy
     restart: unless-stopped
     ports:
       - 80:80
@@ -25,7 +26,7 @@ services:
     depends_on:
       - api-gateway
     volumes:
-      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - /var/run/docker.sock:/var/run/docker.sock
       - caddy_data:/data
       - caddy_config:/config
     
@@ -57,6 +58,10 @@ services:
   api-gateway:
     build: https://github.com/wisdom-oss/api-gateway.git#main
     image: wisdom-oss/api-gateway:main-latest
+    labels:
+      caddy: <<binding>>
+      caddy.handle_path: /api/*
+      caddy.handle_path.0_reverse_proxy: "{{upstreams 8090}}"
     hostname: 
       api-gateway
     expose:

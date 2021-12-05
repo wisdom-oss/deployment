@@ -153,6 +153,38 @@ else
   exit 0
 fi
 
+echo -e "\n${lightpurple}HTTP Server Setup${normal}"
+echo -e "You have two installation options for the system:"
+echo -e "1) Installing the system for intranet usage (Recommended for testing purposes) [${green}Standard${normal}]"
+echo -e "2) Installing the system for internet usage (Recommended for deployment purposes, ⚠️ ${yellow}HTTPS Only${normal} ⚠️ )\n"
+
+while :
+do
+read -rp "Please select a installation method [1]: " option
+
+if [[ $option == 1 || $option = "" ]]
+then
+  find . -type f -exec $sudo sed -i "s,<<binding>>,:80,g" {} \;
+  break
+elif [[ $option == 2 ]]
+then
+  echo -e "Please enter the hostname unter which the dashboard shall be made available."
+  echo -e "⚠️ ${yellow}The entered hostname needs to match the address used in the browser exactly${normal}\n"
+  while :
+  do
+    echo -en "Hostname: "
+    read -r hostname
+    echo -en "You entered \"${hostname}\". Is this correct? [Y/n]: "
+    read -r confirm
+    if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
+    then
+      find . -type f -exec $sudo sed -i "s,<<binding>>,${hostname},g" {} \;
+      break
+    fi
+  done
+fi
+done
+
 echo -e "\n${green}✅ Ready for startup${nocolor}\n"
 echo -en "${orange}Do you wish start the containers? (Y/n): ${nocolor}"
 read -r confirm

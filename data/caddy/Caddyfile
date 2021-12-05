@@ -1,9 +1,0 @@
-{
-  auto_https off
-}
-
-<<hostname>> {
-  handle_path /api/* {
-    reverse_proxy api-gateway:8090
-  }
-}

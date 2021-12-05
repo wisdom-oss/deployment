@@ -193,6 +193,8 @@ then
   read -rp "Hostname des Servers: " hostname
   $sudo sed -i "s,<<hostname>>,$hostname,g" data/caddy/Caddyfile
   echo -e "\n${lightblue}Starting the containers${nocolor}\n"
+  echo -e "${yellow}WARNING: There will be some images marked as error. This is normal and does not interfere"
+  echo -e "with the actual deployment of the containers.${normal}"
   $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
   sleep 30s
   $sudo docker restart wisdom-oss-api-gateway-1

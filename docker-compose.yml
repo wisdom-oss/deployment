@@ -3,9 +3,7 @@ version: '3.8'
 # Named volumes
 volumes:
   mariadb_data:
-    external: true
   caddy_data:
-    external: true
   caddy_config:
 
 # Networking Setup
@@ -17,8 +15,7 @@ networks:
 # Base Services for using the Product
 services:
   reverse-proxy:
-    build: ./data/caddy/
-    image: caddy:2.4.6-with-docker-proxy
+    image: caddy:2.4.6-alpine
     restart: unless-stopped
     ports:
       - 80:80
@@ -26,9 +23,9 @@ services:
     depends_on:
       - api-gateway
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - caddy_data:/data
       - caddy_config:/config
+      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
     
   message-broker:
     image: rabbitmq:3.9.9-management-alpine
@@ -40,7 +37,7 @@ services:
   database:
     image: mariadb:10.6.4-focal
     restart: always
-    expose:
+    ports:
       - 3306
     environment:
       MARIADB_RANDOM_ROOT_PASSWORD: "yes"
@@ -58,10 +55,6 @@ services:
   api-gateway:
     build: https://github.com/wisdom-oss/api-gateway.git#main
     image: wisdom-oss/api-gateway:main-latest
-    labels:
-      caddy: <<binding>>
-      caddy.handle_path: /api/*
-      caddy.handle_path.0_reverse_proxy: "{{upstreams 8090}}"
     hostname: 
       api-gateway
     expose:

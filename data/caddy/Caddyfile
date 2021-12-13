@@ -1,0 +1,5 @@
+<<binding>> {
+  handle_path /api/* {
+    reverse_proxy api-gateway:8090
+  }
+}

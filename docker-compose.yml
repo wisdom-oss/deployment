@@ -16,7 +16,7 @@ networks:
 services:
   reverse-proxy:
     image: caddy:2.4.6-alpine
-    restart: unless-stopped
+    restart: always
     ports:
       - 80:80
       - 443:443

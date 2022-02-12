@@ -30,13 +30,18 @@ services:
   message-broker:
     image: rabbitmq:3.9.9-management-alpine
     restart: always
+    hostname: message-broker
     expose:
       - 5672
       - 15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=wisdom
+      - RABBITMQ_DEFAULT_PASS=<<gen-pass-rabbitmq>>
 
   database:
     image: mariadb:10.6.4-focal
     restart: always
+    hostname: database
     ports:
       - 3306
     environment:
@@ -74,7 +79,9 @@ services:
     expose:
       - 5000
     environment:
-      - SQLALCHEMY_DATABASE_URL=mysql+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization
+      - DATABASE_DSN=mysql+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization
+      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - SERVICE_REGISTRY_URL=http://service-registry
 
   phpmyadmin:
     image: phpmyadmin

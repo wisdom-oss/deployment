@@ -26,6 +26,15 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
+
+  frontend:
+    build: https://github.com/wisdom-oss/frontend-workspace.git#main
+    image: wisdom-oss/frontend:main-latest
+    hostname: frontend
+    restart: always
+    expose:
+      - 80
+  
     
   message-broker:
     image: rabbitmq:3.9.9-management-alpine

@@ -54,7 +54,7 @@ services:
     ports:
       - 3306
     environment:
-      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MARIADB_ROOT_PASSWORD: <<gen-db-pass>>
     volumes:
       - ./data/mariadb/:/docker-entrypoint-initdb.d/
       - mariadb_data:/var/lib/mysql
@@ -88,6 +88,6 @@ services:
     expose:
       - 5000
     environment:
-      - DATABASE_DSN=mysql+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization
+      - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
       - SERVICE_REGISTRY_HOST=service-registry:8761

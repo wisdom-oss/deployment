@@ -32,7 +32,7 @@ normal=$(tput sgr0)
 
 ROOT_DIRECTORY="/opt/wisdom-oss"
 # Mapping of passwords which shall be generated and in which file it may be needed
-password_blanks=("gen-pass-auth-service" "gen-pass-rabbitmq")
+password_blanks=("gen-db-pass" "gen-pass-rabbitmq")
 
 # Location of the docker-compose file relative to the current directory
 compose_file_location="./docker-compose.yml"

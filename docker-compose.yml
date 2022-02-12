@@ -56,7 +56,6 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: <<gen-db-pass>>
     volumes:
-      - ./data/mariadb/:/docker-entrypoint-initdb.d/
       - mariadb_data:/var/lib/mysql
 
   service-registry:

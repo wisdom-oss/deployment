@@ -90,4 +90,4 @@ services:
     environment:
       - DATABASE_DSN=mysql+pymysql://authorization-service:<<gen-pass-auth-service>>@database/authorization
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - SERVICE_REGISTRY_URL=http://service-registry
+      - SERVICE_REGISTRY_HOST=service-registry:8761

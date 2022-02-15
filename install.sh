@@ -129,25 +129,14 @@ echo -e "${lightblue}Cloning files for WISdoM OSS Version${normal}"
 $sudo mkdir -p $ROOT_DIRECTORY
 cd $ROOT_DIRECTORY || exit 1
 $sudo git clone https://github.com/wisdom-oss/deployment.git .
-echo -en "${orange}Do you wish automatically generate secure passwords? (Y/n): ${nocolor}"
-read -r confirm 
-if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
-then
-  echo -e "${lightgreen}Generating passwords with openssl${normal}"
-  for password_field in "${password_blanks[@]}"
-  do
-    find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(openssl rand -base64 18),g" {} \;
-  done
-  echo -e "\n${green}✅ Generated passwords${nocolor}\n"
-else
-  echo -e "${red}No passwords generated!${nocolor}"
-  echo -e "Please replace the following strings with passwords of your choice:"
-  for password_field in "${password_blanks[@]}"
-  do
-    echo "<<$password_field>>"
-  done
-  exit 0
-fi
+
+echo -e "${lightgreen}Generating passwords with openssl${normal}"
+for password_field in "${password_blanks[@]}"
+do
+  openssl rand -base64 18 | $sudo tee "./tokens/.$password_field" > /dev/null
+  find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat .tokens/.$password_field),g" {} \;
+done
+echo -e "\n${green}✅ Generated passwords${nocolor}\n"
 
 echo -e "\n${lightpurple}HTTP Server Setup${normal}"
 echo -e "You have two installation options for the system:"

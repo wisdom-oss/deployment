@@ -63,23 +63,22 @@ echo -e "Timeout: 120 seconds"
 $sudo docker compose stop -t 120
 echo -e "\n${green}✅ Stopped all currently running containers${nocolor}\n"
 
-echo -e "${lightcyan}1.2 Stashing all local changes${nocolor}"
-$sudo git stash
-echo -e "\n${green}✅ Stashed all local changes${nocolor}\n"
-
 
 echo -e "${lightcyan}1.3 Pulling the deployment Repo for new files${nocolor}"
-$sudo git pull
+$sudo git pull -X theirs
 echo -e "\n${green}✅ Pulled from the deployment repository${nocolor}\n"
 
-echo -e "${lightcyan}1.2 Unstashing all local changes${nocolor}"
-$sudo git stash pop
 # Create new passwords for possibly newly created services where needed
 for password_field in "${password_blanks[@]}"
   do
-    find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(openssl rand -base64 18),g" {} \;
-  done
-echo -e "\n${green}✅ Unstashed all local changes${nocolor}\n"
+    if [[ -f ".$password_field" ]]; then
+      echo -e "Found existing password for: ${password_field}"
+      find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat .$password_field),g" {} \;
+    else
+      openssl rand -base64 18 | $sudo tee "./tokens/.$password_field" > /dev/null
+      find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat .tokens/.$password_field),g" {} \;
+    fi
+done
 
 echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
 $sudo docker compose build

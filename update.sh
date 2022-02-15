@@ -75,7 +75,7 @@ for password_field in "${password_blanks[@]}"
       echo -e "Found existing password for: ${password_field}"
       find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat ./.tokens/.$password_field),g" {} \;
     else
-      openssl rand -base64 18 | $sudo tee "./.tokens/.$password_field" > /dev/null
+      openssl rand -hex 16 | $sudo tee "./.tokens/.$password_field" > /dev/null
       find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat ./.tokens/.$password_field),g" {} \;
     fi
 done

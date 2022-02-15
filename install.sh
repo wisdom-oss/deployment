@@ -134,7 +134,7 @@ echo -e "${lightgreen}Generating passwords with openssl${normal}"
 $sudo mkdir -p ./.tokens
 for password_field in "${password_blanks[@]}"
 do
-  openssl rand -base64 18 | $sudo tee "./.tokens/.$password_field" > /dev/null
+  openssl rand -hex 16 | $sudo tee "./.tokens/.$password_field" > /dev/null
   find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat ./.tokens/.$password_field),g" {} \;
 done
 echo -e "\n${green}✅ Generated passwords${nocolor}\n"

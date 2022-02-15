@@ -71,12 +71,12 @@ echo -e "\n${green}✅ Pulled from the deployment repository${nocolor}\n"
 # Create new passwords for possibly newly created services where needed
 for password_field in "${password_blanks[@]}"
   do
-    if [[ -f ".$password_field" ]]; then
+    if [[ -f "./.tokens/.$password_field" ]]; then
       echo -e "Found existing password for: ${password_field}"
-      find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat .$password_field),g" {} \;
+      find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat ./.tokens/.$password_field),g" {} \;
     else
-      openssl rand -base64 18 | $sudo tee "./tokens/.$password_field" > /dev/null
-      find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat .tokens/.$password_field),g" {} \;
+      openssl rand -base64 18 | $sudo tee "./.tokens/.$password_field" > /dev/null
+      find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat ./.tokens/.$password_field),g" {} \;
     fi
 done
 

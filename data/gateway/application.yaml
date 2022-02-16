@@ -1,17 +1,19 @@
 server:
   port: 8090
   max-header-size: 16MB
+  http2:
+    enabled: true
 
 eureka:
   client:
-      eureka-service-url-poll-interval-seconds: 5
-      healthcheck:
-          enabled: true
-      service-url:
-          defaultZone: http://${SERVICE_REGISTRY_HOST}:8761/eureka/
-      registry-fetch-interval-seconds: 5
-      webclient:
-          enabled: true
+    eureka-service-url-poll-interval-seconds: 5
+    healthcheck:
+        enabled: true
+    service-url:
+        defaultZone: http://${SERVICE_REGISTRY_HOST}:8761/eureka/
+    registry-fetch-interval-seconds: 5
+    webclient:
+        enabled: true
   instance:
     non-secure-port: 8090
     appname: api-gateway
@@ -23,6 +25,8 @@ spring:
     name: WISdoM API Gateway
   cloud:
     loadbalancer:
+      cache:
+        enabled: false
       ribbon:
         enabled: false
     gateway:
@@ -44,4 +48,3 @@ spring:
           uri: lb://water-usage-forecasts-rest
           predicates:
             - Path=/water-usage-forecasts/**
- 

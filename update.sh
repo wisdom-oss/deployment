@@ -59,13 +59,13 @@ read -r confirmUpdaterExecution && [[ $confirmUpdaterExecution == [yY] || $confi
 clear
 
 echo -e "${lightcyan}1.1 Stopping all currently running containers${nocolor}"
-echo -e "Timeout: 30 seconds"
-$sudo docker compose stop -t 30
+$sudo docker compose stop
 echo -e "\n${green}✅ Stopped all currently running containers${nocolor}\n"
 
 
 echo -e "${lightcyan}1.3 Pulling the deployment Repo for new files${nocolor}"
-$sudo git pull --force -X theirs
+$sudo git reset --hard HEAD
+$sudo git pull --force
 echo -e "\n${green}✅ Pulled from the deployment repository${nocolor}\n"
 
 # Create new passwords for possibly newly created services where needed

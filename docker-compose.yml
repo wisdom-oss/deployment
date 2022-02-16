@@ -76,7 +76,7 @@ services:
       - service-registry
     environment:
       SPRING_ACTIVE_PROFILES: production
-      SERVICE_REGISTRY_HOSTNAME: service-registry
+      SERVICE_REGISTRY_HOST: service-registry
     volumes:
       - ./data/gateway:/opt/api-gateway/config
 

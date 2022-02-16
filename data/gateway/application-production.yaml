@@ -19,8 +19,6 @@ eureka:
     lease-renewal-interval-in-seconds: 1
 
 spring:
-  profiles:
-    default: production
   application:
     name: WISdoM API Gateway
   cloud:

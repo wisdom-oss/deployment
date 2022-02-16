@@ -34,8 +34,8 @@ services:
     restart: always
     expose:
       - 80
-  
-    
+
+
   message-broker:
     image: rabbitmq:3.9.9-management-alpine
     restart: always
@@ -68,14 +68,13 @@ services:
   api-gateway:
     build: https://github.com/wisdom-oss/api-gateway.git#main
     image: wisdom-oss/api-gateway:main-latest
-    hostname: 
+    hostname:
       api-gateway
     expose:
       - 8090
     depends_on:
       - service-registry
     environment:
-      SPRING_ACTIVE_PROFILES: production
       SERVICE_REGISTRY_HOST: service-registry
     volumes:
       - ./data/gateway:/opt/api-gateway/config
@@ -109,7 +108,7 @@ services:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP,HTTP
 
-    
+
 
   service-water-usage-forecasts-calculations:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
@@ -125,4 +124,3 @@ services:
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP
-  

@@ -59,7 +59,7 @@ read -r confirmUpdaterExecution && [[ $confirmUpdaterExecution == [yY] || $confi
 clear
 
 echo -e "${lightcyan}1.1 Stopping all currently running containers${nocolor}"
-$sudo docker compose stop
+$sudo docker compose down
 echo -e "\n${green}✅ Stopped all currently running containers${nocolor}\n"
 
 
@@ -79,6 +79,41 @@ for password_field in "${password_blanks[@]}"
       find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat ./.tokens/.$password_field),g" {} \;
     fi
 done
+
+if [[ -f "./.tokens/.caddy.binding" ]]; then
+  find . -type f -exec $sudo sed -i "s,<<binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+else
+  echo -e "\n${lightpurple}HTTP Server Setup${normal}"
+  echo -e "You have two installation options for the system:"
+  echo -e "1) Installing the system for intranet usage (Recommended for testing purposes) [${green}Standard${normal}]"
+  echo -e "2) Installing the system for internet usage (Recommended for deployment purposes, ⚠️ ${yellow}HTTPS Only${normal} ⚠️ )\n"
+
+  while : ; do
+    read -rp "Please select a installation method [1]: " option
+
+    if [[ $option == 1 || $option = "" ]]
+    then
+      echo ":80" | $sudo tee "./.tokens/.caddy-binding"
+      find . -type f -exec $sudo sed -i "s,<<binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+      break
+    elif [[ $option == 2 ]]; then
+      echo -e "Please enter the hostname unter which the dashboard shall be made available."
+      echo -e "⚠️ ${yellow}The entered hostname needs to match the address used in the browser exactly${normal}\n"
+      while : ; do
+        echo -en "Hostname: "
+        read -r hostname
+        echo -en "You entered \"${hostname}\". Is this correct? [Y/n]: "
+        read -r confirm
+        if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]] ; then
+          echo $hostname | $sudo tee "./.tokens/.caddy-binding" 
+          find . -type f -exec $sudo sed -i "s,<<binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+          break
+        fi
+      done
+    fi
+  done
+fi
+
 
 echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
 $sudo docker compose build

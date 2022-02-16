@@ -1,0 +1,17 @@
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - RewritePath=(?<serviceId>/[^/]+)/(?<path>/?.*), /$\{path}
+        - TokenRelay=
+      # You may append new routes at the end of the already configured ones
+      routes:
+        - id: authorization-service
+          uri: lb://authorization-service
+          predicates:
+            - Path=/auth/**
+        - id: water-usage-forecasts
+          uri: lb://water-usage-forecasts-rest
+          predicates:
+            - Path=/water-usage-forecasts/**
+    

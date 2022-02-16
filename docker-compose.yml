@@ -77,6 +77,8 @@ services:
     environment:
       SPRING_ACTIVE_PROFILES: production
       SERVICE_REGISTRY_HOSTNAME: service-registry
+    volumes:
+      - ./data/gateway:/opt/api-gateway/config
 
   authorization-service:
     build: https://github.com/wisdom-oss/authorization-service.git#main

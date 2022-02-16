@@ -80,7 +80,7 @@ for password_field in "${password_blanks[@]}"
     fi
 done
 
-if [[ -f "./.tokens/.caddy.binding" ]]; then
+if [[ -f "./.tokens/.caddy-binding" ]]; then
   find . -type f -exec $sudo sed -i "s,<<binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
 else
   echo -e "\n${lightpurple}HTTP Server Setup${normal}"

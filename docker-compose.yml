@@ -83,10 +83,10 @@ services:
     build: https://github.com/wisdom-oss/authorization-service.git#main
     image: wisdom-oss/authorization-service:main-latest
     depends_on:
-      - api-gateway
       - database
     expose:
       - 5000
+    hostname: authorization-service
     environment:
       - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
@@ -97,7 +97,6 @@ services:
     image: wisdom-oss/water-usage-forecasts-rest:main-latest
     depends_on:
       - message-broker
-      - api-gateway
     expose:
      - 5000
     environment:
@@ -108,14 +107,11 @@ services:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP,HTTP
 
-
-
   service-water-usage-forecasts-calculations:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest
     depends_on:
       - message-broker
-      - api-gateway
     expose:
      - 5000
     environment:

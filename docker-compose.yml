@@ -5,6 +5,7 @@ volumes:
   mariadb_data:
   caddy_data:
   caddy_config:
+  postgres_data:
 
 # Networking Setup
 networks:
@@ -35,7 +36,6 @@ services:
     expose:
       - 80
 
-
   message-broker:
     image: rabbitmq:3.9.9-management-alpine
     restart: always
@@ -57,6 +57,17 @@ services:
       MARIADB_ROOT_PASSWORD: <<gen-db-pass>>
     volumes:
       - mariadb_data:/var/lib/mysql
+
+  postgres:
+    image: postgis/postgis:14-master
+    restart: always
+    hostname: postgres
+    ports:
+      - 5432
+    environment:
+      - POSTGRES_PASSWORD=<<gen-postgres-pass>>
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   service-registry:
     build: https://github.com/wisdom-oss/service-registry.git#main

@@ -58,6 +58,17 @@ echo -en "${yellow}Do you whish to continue with the updates? (y/N): ${nocolor}"
 read -r confirmUpdaterExecution && [[ $confirmUpdaterExecution == [yY] || $confirmUpdaterExecution == [yY][eE][sS] ]] ||  exit 1
 clear
 
+echo -e "${purple}Checking for a newer update script${nocolor}"
+ORIGINAL_SUM=$(sha1sum update.sh)
+$sudo git fetch origin
+$sudo git checkout origin/main update.sh
+NEW_SUM=$(sha1sum update.sh)
+if [[ ${ORIGINAL_SUM} != ${NEW_SUM} ]]; then
+  echo "update.sh changed, please run this script again, exiting."
+  $sudo chmod +x update.sh
+  exit 2
+fi
+
 echo -e "${lightcyan}1.1 Stopping all currently running containers${nocolor}"
 $sudo docker compose down
 echo -e "\n${green}✅ Stopped all currently running containers${nocolor}\n"

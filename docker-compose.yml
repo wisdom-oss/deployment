@@ -72,6 +72,7 @@ services:
   service-registry:
     build: https://github.com/wisdom-oss/service-registry.git#main
     image: wisdom-oss/service-registry:main-latest
+    restart: always
     expose:
       - 8761
     hostname: service-registry
@@ -79,6 +80,7 @@ services:
   api-gateway:
     build: https://github.com/wisdom-oss/api-gateway.git#main
     image: wisdom-oss/api-gateway:main-latest
+    restart: always
     hostname:
       api-gateway
     expose:
@@ -93,6 +95,7 @@ services:
   authorization-service:
     build: https://github.com/wisdom-oss/authorization-service.git#main
     image: wisdom-oss/authorization-service:main-latest
+    restart: always
     depends_on:
       - database
     expose:
@@ -101,11 +104,12 @@ services:
     environment:
       - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - SERVICE_REGISTRY_HOST=service-registry:8761
+      - SERVICE_REGISTRY_HOST=service-registry
 
   service-water-usage-forecasts-rest:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
     image: wisdom-oss/water-usage-forecasts-rest:main-latest
+    restart: always
     depends_on:
       - message-broker
     expose:
@@ -113,7 +117,7 @@ services:
     environment:
       - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/water_usage
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - SERVICE_REGISTRY_HOST=service-registry:8761
+      - SERVICE_REGISTRY_HOST=service-registry
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP,HTTP
@@ -121,13 +125,14 @@ services:
   service-water-usage-forecasts-calculations:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest
+    restart: always
     depends_on:
       - message-broker
     expose:
      - 5000
     environment:
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - SERVICE_REGISTRY_HOST=service-registry:8761
+      - SERVICE_REGISTRY_HOST=service-registry
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP

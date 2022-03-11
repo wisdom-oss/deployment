@@ -48,3 +48,7 @@ spring:
           uri: lb://water-usage-forecasts-rest
           predicates:
             - Path=/water-usage-forecasts/**
+        - id: geodata-rest
+          uri: lb://geo-data-rest
+          predicates:
+            - Path=/geodata-rest/**

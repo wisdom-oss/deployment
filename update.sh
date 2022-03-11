@@ -65,7 +65,6 @@ $sudo git checkout origin/main update.sh
 NEW_SUM=$(sha1sum update.sh)
 if [[ ${ORIGINAL_SUM} != ${NEW_SUM} ]]; then
   echo "update.sh changed, please run this script again, exiting."
-  $sudo chmod +x update.sh
   exit 2
 fi
 

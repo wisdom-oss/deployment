@@ -1,0 +1,14 @@
+- name: lower-saxony
+  db_schema: public
+  resolutions:
+    - name: municipalities
+      table: nds_municipalities
+    - name: districts
+      table: nds_districts
+      contains:
+        - municipalities
+    - name: regions
+      table: nds_regions
+      contains:
+        - municipalities
+        - districts

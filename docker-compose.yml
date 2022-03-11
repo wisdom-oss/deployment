@@ -136,3 +136,19 @@ services:
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP
+
+  service-geo-data-rest:
+    build: https://github.com/wisdom-oss/service-geo-data-rest.git#main
+    image: wisdom-oss/services/geo-data-rest:main-latest
+    restart: always
+    depends_on:
+      - message-broker
+      - postgres
+    expose:
+      - 5000
+    environment:
+      - DATABASE_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/geodata
+      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - SERVICE_REGISTRY_HOST=service-registry
+    volumes:
+      - ./data/geodata/layers.yaml:/opt/geo-data-rest/layers.yaml

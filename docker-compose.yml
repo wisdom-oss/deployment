@@ -127,7 +127,7 @@ services:
         max-size: 5m
         max-file: 5
 
-  authorization-service:
+  serivce-authorization:
     build: https://github.com/wisdom-oss/authorization-service.git#main
     image: wisdom-oss/authorization-service:main-latest
     restart: always
@@ -140,6 +140,24 @@ services:
       - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
       - SERVICE_REGISTRY_HOST=service-registry
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  serivce-amqp-authorization:
+    build: https://github.com/wisdom-oss/amqp-authorization-service.git#main
+    image: wisdom-oss/service-amqp-authorization:main-latest
+    restart: always
+    depends_on:
+      - database
+      - message_broker
+    hostname: amqp-authorization-service
+    environment:
+      - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
+      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - AMQP_EXCHANGE_NAME=authorization-service
     logging:
       driver: "json-file"
       options:

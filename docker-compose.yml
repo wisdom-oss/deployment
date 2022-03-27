@@ -175,6 +175,7 @@ services:
     environment:
       - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/water_usage
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - AMQP_EXCHANGE_NAME=water-usage-forecasts
       - SERVICE_REGISTRY_HOST=service-registry
     labels:
       - wisdom.oss.type=backend-service
@@ -195,6 +196,7 @@ services:
      - 5000
     environment:
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - AMQP_EXCHANGE_NAME=water-usage-forecasts
       - SERVICE_REGISTRY_HOST=service-registry
     labels:
       - wisdom.oss.type=backend-service

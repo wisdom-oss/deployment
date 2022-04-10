@@ -1,0 +1,229 @@
+version: '3.8'
+
+# Named volumes
+volumes:
+  mariadb_data:
+  caddy_data:
+  caddy_config:
+  postgres_data:
+
+# Networking Setup
+networks:
+  default:
+    name: wisdom-oss
+    driver: bridge
+
+# Base Services for using the Product
+services:
+  reverse-proxy:
+    image: caddy:2.4.6-alpine
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - api-gateway
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  frontend:
+    build: https://github.com/wisdom-oss/frontend-workspace.git#main
+    image: wisdom-oss/frontend:main-latest
+    hostname: frontend
+    restart: always
+    expose:
+      - 80
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  message-broker:
+    image: rabbitmq:3.9.9-management-alpine
+    restart: always
+    hostname: message-broker
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=wisdom
+      - RABBITMQ_DEFAULT_PASS=<<gen-pass-rabbitmq>>
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  database:
+    image: mariadb:10.6.4-focal
+    restart: always
+    hostname: database
+    ports:
+      - 3306:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: <<gen-db-pass>>
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  postgres:
+    image: postgis/postgis:14-master
+    restart: always
+    hostname: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=<<gen-postgres-pass>>
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  service-registry:
+    build: https://github.com/wisdom-oss/service-registry.git#main
+    image: wisdom-oss/service-registry:main-latest
+    restart: always
+    expose:
+      - 8761:8761
+    hostname: service-registry
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  api-gateway:
+    build: https://github.com/wisdom-oss/api-gateway.git#main
+    image: wisdom-oss/api-gateway:main-latest
+    restart: always
+    hostname:
+      api-gateway
+    expose:
+      - 8090
+    depends_on:
+      - service-registry
+    environment:
+      SERVICE_REGISTRY_HOST: service-registry
+    volumes:
+      - ./data/gateway:/opt/api-gateway/config
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  serivce-authorization:
+    build: https://github.com/wisdom-oss/authorization-service.git#main
+    image: wisdom-oss/authorization-service:main-latest
+    restart: always
+    depends_on:
+      - database
+    expose:
+      - 5000
+    hostname: authorization-service
+    environment:
+      - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
+      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - SERVICE_REGISTRY_HOST=service-registry
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  serivce-amqp-authorization:
+    build: https://github.com/wisdom-oss/amqp-authorization-service.git#main
+    image: wisdom-oss/service-amqp-authorization:main-latest
+    restart: always
+    depends_on:
+      - database
+      - message_broker
+    hostname: amqp-authorization-service
+    environment:
+      - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
+      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - AMQP_EXCHANGE_NAME=authorization-service
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  service-water-usage-forecasts-rest:
+    build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
+    image: wisdom-oss/water-usage-forecasts-rest:main-latest
+    restart: always
+    depends_on:
+      - message-broker
+    expose:
+     - 5000
+    environment:
+      - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/water_usage
+      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - AMQP_EXCHANGE_NAME=water-usage-forecasts
+      - SERVICE_REGISTRY_HOST=service-registry
+    labels:
+      - wisdom.oss.type=backend-service
+      - wisdom.oss.protocol=AMQP,HTTP
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  service-water-usage-forecasts-calculations:
+    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
+    image: wisdom-oss/water-usage-forecasts-calculations:main-latest
+    restart: always
+    depends_on:
+      - message-broker
+    expose:
+     - 5000
+    environment:
+      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - AMQP_EXCHANGE_NAME=water-usage-forecasts
+      - SERVICE_REGISTRY_HOST=service-registry
+    labels:
+      - wisdom.oss.type=backend-service
+      - wisdom.oss.protocol=AMQP
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  service-geo-data-rest:
+    build: https://github.com/wisdom-oss/service-geo-data-rest.git#main
+    image: wisdom-oss/services/geo-data-rest:main-latest
+    restart: always
+    depends_on:
+      - message-broker
+      - postgres
+    expose:
+      - 5000
+    environment:
+      - DATABASE_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/geodata
+      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - SERVICE_REGISTRY_HOST=service-registry
+    volumes:
+      - ./data/geodata/layers.yaml:/opt/geo-data-rest/layers.yaml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5

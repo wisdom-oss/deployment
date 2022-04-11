@@ -173,7 +173,7 @@ services:
     expose:
      - 5000
     environment:
-      - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/water_usage
+      - DATABASE_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
       - AMQP_EXCHANGE_NAME=water-usage-forecasts
       - SERVICE_REGISTRY_HOST=service-registry

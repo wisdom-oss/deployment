@@ -98,7 +98,7 @@ services:
     build: https://github.com/wisdom-oss/service-registry.git#main
     image: wisdom-oss/service-registry:main-latest
     restart: always
-    expose:
+    ports:
       - 8761:8761
     hostname: service-registry
     logging:

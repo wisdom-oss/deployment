@@ -2,7 +2,6 @@ version: '3.8'
 
 # Named volumes
 volumes:
-  mariadb_data:
   caddy_data:
   caddy_config:
   postgres_data:
@@ -62,27 +61,11 @@ services:
         max-size: 5m
         max-file: 5
 
-  database:
-    image: mariadb:10.6.4-focal
-    restart: always
-    hostname: database
-    ports:
-      - 3306
-    environment:
-      MARIADB_ROOT_PASSWORD: <<gen-db-pass>>
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
-
   postgres:
     image: postgis/postgis:14-master
     restart: always
     hostname: postgres
-    ports:
+    expose:
       - 5432
     environment:
       - POSTGRES_PASSWORD=<<gen-postgres-pass>>
@@ -132,14 +115,14 @@ services:
     image: wisdom-oss/authorization-service:main-latest
     restart: always
     depends_on:
-      - database
+      - postgres
     expose:
       - 5000
     hostname: authorization-service
     environment:
-      - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
-      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - SERVICE_REGISTRY_HOST=service-registry
+      - CONFIG_SERVICE_NAME=authorization-service
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
     logging:
       driver: "json-file"
       options:
@@ -151,13 +134,13 @@ services:
     image: wisdom-oss/service-amqp-authorization:main-latest
     restart: always
     depends_on:
-      - database
+      - postgres
       - message_broker
     hostname: amqp-authorization-service
     environment:
-      - DATABASE_DSN=mysql+pymysql://root:<<gen-db-pass>>@database/authorization
-      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - AMQP_EXCHANGE_NAME=authorization-service
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_AMQP_BIND_EXCHANGE=authorization-service
     logging:
       driver: "json-file"
       options:
@@ -173,10 +156,35 @@ services:
     expose:
      - 5000
     environment:
-      - DATABASE_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - AMQP_EXCHANGE_NAME=water-usage-forecasts
-      - SERVICE_REGISTRY_HOST=service-registry
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_AMQP_EXCHANGE=water-usage-forecasts
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
+      - CONFIG_SERVICE_NAME=water-usage-forecasts-rest
+    labels:
+      - wisdom.oss.type=backend-service
+      - wisdom.oss.protocol=AMQP,HTTP
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
+  beta-service-water-usage-forecasts-rest:
+    build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#dev
+    image: wisdom-oss/water-usage-forecasts-rest:beta-latest
+    restart: always
+    depends_on:
+      - message-broker
+    expose:
+     - 5000
+    environment:
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_AMQP_EXCHANGE=water-usage-forecasts
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
+      - CONFIG_SERVICE_NAME=water-usage-forecasts-rest
+
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP,HTTP
@@ -187,7 +195,7 @@ services:
         max-file: 5
 
   service-water-usage-forecasts-calculations:
-    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
+    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#6b736ac
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest
     restart: always
     depends_on:
@@ -195,9 +203,10 @@ services:
     expose:
      - 5000
     environment:
-      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - AMQP_EXCHANGE_NAME=water-usage-forecasts
-      - SERVICE_REGISTRY_HOST=service-registry
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_AMQP_BIND_EXCHANGE=water-usage-forecasts
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_SERVICE_NAME=water-usage-forecasts-calculations
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP

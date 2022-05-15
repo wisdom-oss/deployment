@@ -67,6 +67,7 @@ NEW_SUM=$(sha1sum update.sh)
 echo -e "New: ${NEW_SUM}"
 if [[ ${ORIGINAL_SUM} != ${NEW_SUM} ]]; then
   echo "update.sh changed, please run this script again, exiting."
+  chmod +x update.sh
   exit 2
 fi
 
@@ -129,8 +130,8 @@ fi
 
 
 echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
-$sudo docker compose build
+$sudo docker compose -f docker-compose.dev.yml build
 echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
 echo -e "${cyan}3 Restarting the containers${nocolor}\n"
-$sudo docker compose up -d
+$sudo docker compose -f docker-compose.dev.yml up -d

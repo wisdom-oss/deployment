@@ -179,15 +179,15 @@ read -r confirm
 if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
 then
   echo -e "\n${lightblue}Building the some of the containers${nocolor}\n"
-  $sudo docker compose build
+  $sudo docker compose -f docker-compose.dev.yml build
   echo -e "\n${lightblue}Starting the the containers${nocolor}\n"
-  $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
-  sleep 10 && $sudo docker compose stop api-gateway && sleep 15 && docker compose start api-gateway
+  $sudo docker compose -f docker-compose.dev.yml up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
+  sleep 10 && $sudo docker compose -f docker-compose.dev.yml stop api-gateway && sleep 15 && docker compose -f docker-compose.dev.yml start api-gateway
   echo -e "\n${green}✅ Started the containers${nocolor}\n"
   exit 0
 else
   echo -e "Please execute the following command to spin up the containers later:\n"
-  echo -e "sudo docker compose -f $(pwd)/docker-compose.yml up -d"
+  echo -e "sudo docker compose -f $(pwd)/docker-compose.dev.yml up -d"
   exit 0
 fi
 

@@ -59,11 +59,11 @@ read -r confirmUpdaterExecution && [[ $confirmUpdaterExecution == [yY] || $confi
 clear
 
 echo -e "${purple}Checking for a newer update script${nocolor}"
-ORIGINAL_SUM=$(sha1sum update.sh)
+ORIGINAL_SUM=$(sha1sum update-dev.sh)
 echo -e "Original: ${ORIGINAL_SUM}"
 $sudo git fetch origin
-$sudo git checkout origin/main update.sh
-NEW_SUM=$(sha1sum update.sh)
+$sudo git checkout origin/main update-dev.sh
+NEW_SUM=$(sha1sum update-dev.sh)
 echo -e "New: ${NEW_SUM}"
 if [[ ${ORIGINAL_SUM} != ${NEW_SUM} ]]; then
   echo "update.sh changed, please run this script again, exiting."

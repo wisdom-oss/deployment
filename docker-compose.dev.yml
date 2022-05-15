@@ -195,7 +195,7 @@ services:
         max-file: 5
 
   service-water-usage-forecasts-calculations:
-    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#6b736ac
+    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest
     restart: always
     depends_on:

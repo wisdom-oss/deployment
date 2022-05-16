@@ -49,9 +49,9 @@ services:
     image: rabbitmq:3.9.9-management-alpine
     restart: always
     hostname: message-broker
-    expose:
-      - 5672
-      - 15672
+    ports:
+      - 5672:5672
+      - 15672:15672
     environment:
       - RABBITMQ_DEFAULT_USER=wisdom
       - RABBITMQ_DEFAULT_PASS=<<gen-pass-rabbitmq>>
@@ -65,8 +65,8 @@ services:
     image: postgis/postgis:14-master
     restart: always
     hostname: postgres
-    expose:
-      - 5432
+    ports:
+      - 5432:5432
     environment:
       - POSTGRES_PASSWORD=<<gen-postgres-pass>>
     volumes:
@@ -81,8 +81,8 @@ services:
     build: https://github.com/wisdom-oss/service-registry.git#main
     image: wisdom-oss/service-registry:main-latest
     restart: always
-    expose:
-      - 8761
+    ports:
+      - 8761:8761
     hostname: service-registry
     logging:
       driver: "json-file"
@@ -195,7 +195,7 @@ services:
         max-file: 5
 
   service-water-usage-forecasts-calculations:
-    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#6b736ac
+    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest
     restart: always
     depends_on:
@@ -226,11 +226,12 @@ services:
     expose:
       - 5000
     environment:
-      - DATABASE_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/geodata
-      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - SERVICE_REGISTRY_HOST=service-registry
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_SERVICE_NAME=geodata-rest
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
     volumes:
-      - ./data/geodata/layers.yaml:/opt/geo-data-rest/layers.yaml
+      - ./data/geodata/layers.yaml:/service/configuration/layers.yaml
     logging:
       driver: "json-file"
       options:

@@ -228,7 +228,7 @@ services:
     environment:
       - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_SERVICE_NAME=water-usage-forecasts-calculations
+      - CONFIG_SERVICE_NAME=geodata-rest
     volumes:
       - ./data/geodata/layers.yaml:/service/configuration/layers.yaml
     logging:

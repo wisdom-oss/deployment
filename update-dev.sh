@@ -67,7 +67,6 @@ NEW_SUM=$(sha1sum update-dev.sh)
 echo -e "New: ${NEW_SUM}"
 if [[ ${ORIGINAL_SUM} != ${NEW_SUM} ]]; then
   echo "update.sh changed, please run this script again, exiting."
-  chmod +x update.sh
   exit 2
 fi
 

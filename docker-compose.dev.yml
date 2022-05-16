@@ -226,11 +226,11 @@ services:
     expose:
       - 5000
     environment:
-      - DATABASE_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/geodata
-      - AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - SERVICE_REGISTRY_HOST=service-registry
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_SERVICE_NAME=water-usage-forecasts-calculations
     volumes:
-      - ./data/geodata/layers.yaml:/opt/geo-data-rest/layers.yaml
+      - ./data/geodata/layers.yaml:/service/configuration/layers.yaml
     logging:
       driver: "json-file"
       options:

@@ -170,30 +170,6 @@ services:
         max-size: 5m
         max-file: 5
 
-  beta-service-water-usage-forecasts-rest:
-    build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#dev
-    image: wisdom-oss/water-usage-forecasts-rest:beta-latest
-    restart: always
-    depends_on:
-      - message-broker
-    expose:
-     - 5000
-    environment:
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - CONFIG_AMQP_EXCHANGE=water-usage-forecasts
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
-      - CONFIG_SERVICE_NAME=water-usage-forecasts-rest
-
-    labels:
-      - wisdom.oss.type=backend-service
-      - wisdom.oss.protocol=AMQP,HTTP
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
-
   service-water-usage-forecasts-calculations:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest

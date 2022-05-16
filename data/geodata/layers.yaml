@@ -1,5 +1,5 @@
 - name: lower-saxony
-  db_schema: public
+  db_schema: geodata
   resolutions:
     - name: municipalities
       table: nds_municipalities

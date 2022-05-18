@@ -151,6 +151,9 @@ services:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
     image: wisdom-oss/water-usage-forecasts-rest:main-latest
     restart: always
+    deploy:
+      mode: replicated
+      replicas: 5
     depends_on:
       - message-broker
     expose:
@@ -208,6 +211,29 @@ services:
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry
     volumes:
       - ./data/geodata/layers.yaml:/service/configuration/layers.yaml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+  
+  BETA-service-geo-data-rest:
+    build: https://github.com/wisdom-oss/service-geo-data-rest.git#dev
+    image: wisdom-oss/services/geo-data-rest:main-latest
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 5
+    depends_on:
+      - message-broker
+      - postgres
+    expose:
+      - 5000
+    environment:
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_SERVICE_NAME=geodata-rest-testing
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
     logging:
       driver: "json-file"
       options:

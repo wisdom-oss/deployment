@@ -6,12 +6,11 @@ server:
 
 eureka:
   client:
-    eureka-service-url-poll-interval-seconds: 5
+    eureka-service-url-poll-interval-seconds: 1
     healthcheck:
-        enabled: true
+        enabled: false
     service-url:
         defaultZone: http://${SERVICE_REGISTRY_HOST}:8761/eureka/
-    registry-fetch-interval-seconds: 5
     webclient:
         enabled: true
   instance:
@@ -28,7 +27,7 @@ spring:
       cache:
         enabled: false
       ribbon:
-        enabled: false
+        enabled: true
     gateway:
       httpclient:
         response-timeout: 1h
@@ -52,3 +51,7 @@ spring:
           uri: lb://geodata-rest
           predicates:
             - Path=/geodata-rest/**
+        - id: beta-geodata-rest
+          uri: lb://geodata-rest-testing
+          predicates:
+            - Path=/T-geodata/**

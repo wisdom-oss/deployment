@@ -172,6 +172,7 @@ services:
       replicas: 5
     depends_on:
       - message-broker
+      - redis
     expose:
      - 5000
     environment:
@@ -180,6 +181,8 @@ services:
       - CONFIG_AMQP_EXCHANGE=water-usage-forecasts
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry
       - CONFIG_SERVICE_NAME=water-usage-forecasts-rest
+      - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
+      - CONFIG_USE_REDIS=True
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP,HTTP

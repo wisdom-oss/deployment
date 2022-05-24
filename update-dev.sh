@@ -32,7 +32,7 @@ normal=$(tput sgr0)
 
 ROOT_DIRECTORY="/opt/wisdom-oss"
 # Mapping of passwords which shall be generated and in which file it may be needed
-password_blanks=("gen-db-pass" "gen-pass-rabbitmq" "gen-postgres-pass")
+password_blanks=("gen-pass-rabbitmq" "gen-postgres-pass" "gen-redis-pass")
 
 # Location of the docker-compose file relative to the current directory
 compose_file_location="./docker-compose.yml"
@@ -129,7 +129,7 @@ fi
 
 
 echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
-$sudo docker compose -f docker-compose.dev.yml build
+$sudo docker compose -f docker-compose.dev.yml build --no-cache
 echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
 echo -e "${cyan}3 Restarting the containers${nocolor}\n"

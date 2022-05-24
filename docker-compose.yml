@@ -5,6 +5,7 @@ volumes:
   caddy_data:
   caddy_config:
   postgres_data:
+  redis_persistence:
 
 # Networking Setup
 networks:
@@ -77,12 +78,27 @@ services:
         max-size: 5m
         max-file: 5
 
+  redis:
+    image: redis:alpine
+    restart: always
+    hostname: redis
+    expose:
+      - 6379
+    volumes:
+      - redis_persistence:/data
+    command: redis-server --save 20 1 --loglevel warning --requirepass <<gen-redis-pass>>
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
   service-registry:
     build: https://github.com/wisdom-oss/service-registry.git#main
     image: wisdom-oss/service-registry:main-latest
     restart: always
     ports:
-      - 8761:8761
+      - 8761
     hostname: service-registry
     logging:
       driver: "json-file"

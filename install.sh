@@ -37,7 +37,7 @@ ROOT_DIRECTORY="/opt/wisdom-oss"
 BRANCH="main"
 
 # Mapping of passwords which shall be generated and in which file it may be needed
-password_blanks=("gen-db-pass" "gen-pass-rabbitmq" "gen-postgres-pass")
+password_blanks=("gen-pass-rabbitmq" "gen-postgres-pass" "gen-redis-pass")
 
 # Location of the docker-compose file relative to the current directory
 compose_file_location="./docker-compose.yml"
@@ -179,7 +179,7 @@ read -r confirm
 if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
 then
   echo -e "\n${lightblue}Building the some of the containers${nocolor}\n"
-  $sudo docker compose build
+  $sudo docker compose build --no-cache
   echo -e "\n${lightblue}Starting the the containers${nocolor}\n"
   $sudo docker compose up -d || echo -e "\n${red}Error while staring the containers${nocolor}\n" && exit 1
   sleep 10 && $sudo docker compose stop api-gateway && sleep 15 && docker compose start api-gateway

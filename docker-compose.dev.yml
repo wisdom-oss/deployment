@@ -77,6 +77,22 @@ services:
         max-size: 5m
         max-file: 5
 
+
+  redis:
+    image: redis:alpine
+    restart: always
+    hostname: redis
+    expose:
+      - 6379
+    volumes:
+      - redis_persistence:/data
+    command: redis-server --save 20 1 --loglevel warning --requirepass <<gen-redis-pass>>
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5
+
   service-registry:
     build: https://github.com/wisdom-oss/service-registry.git#main
     image: wisdom-oss/service-registry:main-latest
@@ -219,7 +235,7 @@ services:
   
   BETA-service-geo-data-rest:
     build: https://github.com/wisdom-oss/service-geo-data-rest.git#dev
-    image: wisdom-oss/services/geo-data-rest:main-latest
+    image: wisdom-oss/services/geo-data-rest:dev-latest
     restart: always
     deploy:
       mode: replicated

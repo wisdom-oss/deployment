@@ -224,8 +224,6 @@ services:
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=geodata-rest
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry
-    volumes:
-      - ./data/geodata/layers.yaml:/service/configuration/layers.yaml
     logging:
       driver: "json-file"
       options:

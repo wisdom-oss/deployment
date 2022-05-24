@@ -5,6 +5,7 @@ volumes:
   caddy_data:
   caddy_config:
   postgres_data:
+  redis_persistence:
 
 # Networking Setup
 networks:

@@ -50,8 +50,4 @@ spring:
         - id: geodata-rest
           uri: lb://geodata-rest
           predicates:
-            - Path=/geodata-rest/**
-        - id: beta-geodata-rest
-          uri: lb://geodata-rest-testing
-          predicates:
-            - Path=/T-geodata/**
+            - Path=/geodata/**

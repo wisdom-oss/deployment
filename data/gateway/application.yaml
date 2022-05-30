@@ -51,3 +51,11 @@ spring:
           uri: lb://geodata-rest
           predicates:
             - Path=/geodata/**
+        - id: consumer-rest-service
+          uri: lb://consumers-rest
+          predicates:
+            - Path=/consumers/**
+        - id: water-right-rest-service
+          uri: lb://water-rights-rest
+          predicates:
+            - Path=/water-rights/**

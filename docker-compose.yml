@@ -127,7 +127,7 @@ services:
         max-size: 5m
         max-file: 5
 
-  serivce-authorization:
+  auth-service:
     build: https://github.com/wisdom-oss/authorization-service.git#main
     image: wisdom-oss/authorization-service:main-latest
     restart: always
@@ -149,7 +149,7 @@ services:
         max-size: 5m
         max-file: 5
 
-  serivce-amqp-authorization:
+  amqp-auth-service:
     build: https://github.com/wisdom-oss/amqp-authorization-service.git#main
     image: wisdom-oss/service-amqp-authorization:main-latest
     restart: always
@@ -169,7 +169,7 @@ services:
         max-size: 5m
         max-file: 5
 
-  service-water-usage-forecasts-rest:
+  usage-forecast-rest:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
     image: wisdom-oss/water-usage-forecasts-rest:main-latest
     restart: always
@@ -199,7 +199,7 @@ services:
         max-size: 5m
         max-file: 5
 
-  service-water-usage-forecasts-calculations:
+  usage-forecast-calculations:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest
     restart: always
@@ -225,7 +225,7 @@ services:
         max-size: 5m
         max-file: 5
 
-  service-geo-data-rest:
+  geodata-service:
     build: https://github.com/wisdom-oss/service-geo-data-rest.git#main
     image: wisdom-oss/services/geo-data-rest:main-latest
     restart: always
@@ -249,3 +249,42 @@ services:
         max-size: 5m
         max-file: 5
 
+    consumers:
+      build: https://github.com/wisdom-oss/service-consumers.git#main
+      image: wisdom-oss/services/consumers:main
+      restart: always
+      deploy:
+        mode: replicated
+        replicas: 1
+      depends_on:
+        - amqp-auth-service
+        - message-broker
+        - service-registry
+        - postgres
+      expose:
+        - 5000
+      environment:
+        - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+        - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+        - CONFIG_SERVICE_NAME=consumers-rest
+        - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+
+    water-rights:
+      build: https://github.com/wisdom-oss/service-water-rights.git#main
+      image: wisdom-oss/services/water-rights:main
+      restart: always
+      deploy:
+        mode: replicated
+        replicas: 1
+      depends_on:
+        - amqp-auth-service
+        - message-broker
+        - service-registry
+        - postgres
+      expose:
+        - 5000
+      environment:
+        - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+        - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+        - CONFIG_SERVICE_NAME=water-rights-rest
+        - CONFIG_SERVICE_REGISTRY_HOST=service-registry 

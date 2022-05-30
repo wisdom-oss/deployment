@@ -249,42 +249,42 @@ services:
         max-size: 5m
         max-file: 5
 
-    consumers:
-      build: https://github.com/wisdom-oss/service-consumers.git#main
-      image: wisdom-oss/services/consumers:main
-      restart: always
-      deploy:
-        mode: replicated
-        replicas: 1
-      depends_on:
-        - amqp-auth-service
-        - message-broker
-        - service-registry
-        - postgres
-      expose:
-        - 5000
-      environment:
-        - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-        - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-        - CONFIG_SERVICE_NAME=consumers-rest
-        - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+  consumers:
+    build: https://github.com/wisdom-oss/service-consumers.git#main
+    image: wisdom-oss/services/consumers:main
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    depends_on:
+      - amqp-auth-service
+      - message-broker
+      - service-registry
+      - postgres
+    expose:
+      - 5000
+    environment:
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_SERVICE_NAME=consumers-rest
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
 
-    water-rights:
-      build: https://github.com/wisdom-oss/service-water-rights.git#main
-      image: wisdom-oss/services/water-rights:main
-      restart: always
-      deploy:
-        mode: replicated
-        replicas: 1
-      depends_on:
-        - amqp-auth-service
-        - message-broker
-        - service-registry
-        - postgres
-      expose:
-        - 5000
-      environment:
-        - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-        - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-        - CONFIG_SERVICE_NAME=water-rights-rest
-        - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+  water-rights:
+    build: https://github.com/wisdom-oss/service-water-rights.git#main
+    image: wisdom-oss/services/water-rights:main
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    depends_on:
+      - amqp-auth-service
+      - message-broker
+      - service-registry
+      - postgres
+    expose:
+      - 5000
+    environment:
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_SERVICE_NAME=water-rights-rest
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry 

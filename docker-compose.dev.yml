@@ -164,7 +164,7 @@ services:
     hostname: amqp-authorization-service
     environment:
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F?heartbeat=600
       - CONFIG_AMQP_BIND_EXCHANGE=authorization-service
     logging:
       driver: "json-file"
@@ -187,7 +187,7 @@ services:
      - 5000
     environment:
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F?heartbeat=600
       - CONFIG_AMQP_EXCHANGE=water-usage-forecasts
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry
       - CONFIG_SERVICE_NAME=water-usage-forecasts-rest
@@ -215,7 +215,7 @@ services:
     expose:
      - 5000
     environment:
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F?heartbeat=1800
       - CONFIG_AMQP_BIND_EXCHANGE=water-usage-forecasts
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=water-usage-forecasts-calculations
@@ -242,7 +242,7 @@ services:
     expose:
       - 5000
     environment:
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F?heartbeat=600
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=geodata-rest
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry

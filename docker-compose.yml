@@ -16,13 +16,11 @@ networks:
 # Base Services for using the Product
 services:
   reverse-proxy:
-    image: caddy:2.4.6-alpine
+    image: caddy:alpine
     restart: always
     ports:
       - 80:80
       - 443:443
-    depends_on:
-      - api-gateway
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -38,6 +36,9 @@ services:
     image: wisdom-oss/frontend:main-latest
     hostname: frontend
     restart: always
+    depends_on:
+      - api-gateway
+      - reverse-proxy
     expose:
       - 80
     logging:
@@ -50,9 +51,8 @@ services:
     image: rabbitmq:3.9.9-management-alpine
     restart: always
     hostname: message-broker
-    ports:
-      - 5672:5672
-      - 15672:15672
+    expose:
+      - 5672
     environment:
       - RABBITMQ_DEFAULT_USER=wisdom
       - RABBITMQ_DEFAULT_PASS=<<gen-pass-rabbitmq>>
@@ -66,8 +66,8 @@ services:
     image: postgis/postgis:14-master
     restart: always
     hostname: postgres
-    ports:
-      - 5432:5432
+    expose:
+      - 5432
     environment:
       - POSTGRES_PASSWORD=<<gen-postgres-pass>>
     volumes:
@@ -77,6 +77,7 @@ services:
       options:
         max-size: 5m
         max-file: 5
+
 
   redis:
     image: redis:alpine
@@ -97,7 +98,7 @@ services:
     build: https://github.com/wisdom-oss/service-registry.git#main
     image: wisdom-oss/service-registry:main-latest
     restart: always
-    ports:
+    expose:
       - 8761
     hostname: service-registry
     logging:
@@ -130,8 +131,12 @@ services:
     build: https://github.com/wisdom-oss/authorization-service.git#main
     image: wisdom-oss/authorization-service:main-latest
     restart: always
+    deploy:
+      mode: replicated
+      replicas: 5
     depends_on:
       - postgres
+      - service-registry
     expose:
       - 5000
     hostname: authorization-service
@@ -149,6 +154,9 @@ services:
     build: https://github.com/wisdom-oss/amqp-authorization-service.git#main
     image: wisdom-oss/service-amqp-authorization:main-latest
     restart: always
+    deploy:
+      mode: replicated
+      replicas: 5
     depends_on:
       - postgres
       - message_broker
@@ -167,9 +175,13 @@ services:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
     image: wisdom-oss/water-usage-forecasts-rest:main-latest
     restart: always
+    deploy:
+      mode: replicated
+      replicas: 5
     depends_on:
       - message-broker
       - redis
+      - service-registry
     expose:
      - 5000
     environment:
@@ -178,7 +190,8 @@ services:
       - CONFIG_AMQP_EXCHANGE=water-usage-forecasts
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry
       - CONFIG_SERVICE_NAME=water-usage-forecasts-rest
-      - CONFIG_USE_REDIS=False
+      - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
+      - CONFIG_USE_REDIS=True
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP,HTTP
@@ -192,8 +205,12 @@ services:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest
     restart: always
+    deploy:
+      mode: replicated
+      replicas: 5
     depends_on:
       - message-broker
+      - postgres
     expose:
      - 5000
     environment:
@@ -214,9 +231,13 @@ services:
     build: https://github.com/wisdom-oss/service-geo-data-rest.git#main
     image: wisdom-oss/services/geo-data-rest:main-latest
     restart: always
+    deploy:
+      mode: replicated
+      replicas: 5
     depends_on:
       - message-broker
       - postgres
+      - service-registry
     expose:
       - 5000
     environment:
@@ -229,3 +250,4 @@ services:
       options:
         max-size: 5m
         max-file: 5
+

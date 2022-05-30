@@ -16,13 +16,11 @@ networks:
 # Base Services for using the Product
 services:
   reverse-proxy:
-    image: caddy:2.4.6-alpine
+    image: caddy:alpine
     restart: always
     ports:
       - 80:80
       - 443:443
-    depends_on:
-      - api-gateway
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -38,6 +36,9 @@ services:
     image: wisdom-oss/frontend:main-latest
     hostname: frontend
     restart: always
+    depends_on:
+      - api-gateway
+      - reverse-proxy
     expose:
       - 80
     logging:
@@ -136,6 +137,7 @@ services:
       replicas: 5
     depends_on:
       - postgres
+      - service-registry
     expose:
       - 5000
     hostname: authorization-service
@@ -153,6 +155,9 @@ services:
     build: https://github.com/wisdom-oss/amqp-authorization-service.git#main
     image: wisdom-oss/service-amqp-authorization:main-latest
     restart: always
+    deploy:
+      mode: replicated
+      replicas: 5
     depends_on:
       - postgres
       - message_broker
@@ -177,6 +182,7 @@ services:
     depends_on:
       - message-broker
       - redis
+      - service-registry
     expose:
      - 5000
     environment:
@@ -205,6 +211,7 @@ services:
       replicas: 5
     depends_on:
       - message-broker
+      - postgres
     expose:
      - 5000
     environment:
@@ -231,6 +238,7 @@ services:
     depends_on:
       - message-broker
       - postgres
+      - service-registry
     expose:
       - 5000
     environment:

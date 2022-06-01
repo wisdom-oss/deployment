@@ -33,7 +33,7 @@ normal=$(tput sgr0)
 ROOT_DIRECTORY="/opt/wisdom-oss"
 # Mapping of passwords which shall be generated and in which file it may be needed
 password_blanks=("gen-pass-rabbitmq" "gen-postgres-pass" "gen-redis-pass")
-
+caddy_binding = "binding"
 # Location of the docker-compose file relative to the current directory
 compose_file_location="./docker-compose.yml"
 
@@ -94,7 +94,7 @@ done
 
 if [[ -f "./.tokens/.caddy-binding" ]]; then
   echo -e "Found existing Caddy Binding: $(cat ./.tokens/.caddy-binding)"
-  find . -type f -exec $sudo sed -i "s,<<binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+  find . -type f -exec $sudo sed -i "s,<<$caddy_binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
 else
   echo -e "\n${lightpurple}HTTP Server Setup${normal}"
   echo -e "You have two installation options for the system:"
@@ -107,7 +107,7 @@ else
     if [[ $option == 1 || $option = "" ]]
     then
       echo ":80" | $sudo tee "./.tokens/.caddy-binding"
-      find . -type f -exec $sudo sed -i "s,<<binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+      find . -type f -exec $sudo sed -i "s,<<$caddy_binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
       break
     elif [[ $option == 2 ]]; then
       echo -e "Please enter the hostname unter which the dashboard shall be made available."
@@ -119,7 +119,7 @@ else
         read -r confirm
         if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]] ; then
           echo $hostname | $sudo tee "./.tokens/.caddy-binding" 
-          find . -type f -exec $sudo sed -i "s,<<binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+          find . -type f -exec $sudo sed -i "s,<<$caddy_binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
           break
         fi
       done
@@ -129,7 +129,7 @@ fi
 
 
 echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
-$sudo docker compose -f docker-compose.dev.yml build --no-cache
+$sudo docker compose -f docker-compose.dev.yml build
 echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
 echo -e "${cyan}3 Restarting the containers${nocolor}\n"

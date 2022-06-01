@@ -38,7 +38,7 @@ BRANCH="main"
 
 # Mapping of passwords which shall be generated and in which file it may be needed
 password_blanks=("gen-pass-rabbitmq" "gen-postgres-pass" "gen-redis-pass")
-caddy_binding = "binding"
+caddy_binding="binding"
 # Location of the docker-compose file relative to the current directory
 compose_file_location="./docker-compose.yml"
 

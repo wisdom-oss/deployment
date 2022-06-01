@@ -151,7 +151,7 @@ read -rp "Please select a installation method [1]: " option
 if [[ $option == 1 || $option = "" ]]
 then
   echo ":80" | $sudo tee "./.tokens/.caddy-binding"
-  find . -type f -exec $sudo sed -i "s,<<$caddy_binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+  find . -type f -exec $sudo sed -i "s,<<${caddy_binding}>>,$(cat ./.tokens/.caddy-binding),g" {} \;
   break
 elif [[ $option == 2 ]]
 then
@@ -166,7 +166,7 @@ then
     if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]]
     then
       echo $hostname | $sudo tee "./.tokens/.caddy-binding" 
-      find . -type f -exec $sudo sed -i "s,<<$caddy_binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+      find . -type f -exec $sudo sed -i "s,<<${caddy_binding}>>,$(cat ./.tokens/.caddy-binding),g" {} \;
       break
     fi
   done

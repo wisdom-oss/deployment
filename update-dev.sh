@@ -94,7 +94,7 @@ done
 
 if [[ -f "./.tokens/.caddy-binding" ]]; then
   echo -e "Found existing Caddy Binding: $(cat ./.tokens/.caddy-binding)"
-  find . -type f -exec $sudo sed -i "s,<<$caddy_binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
+  find . -type f -exec $sudo sed -i "s,<<${caddy_binding}>>,$(cat ./.tokens/.caddy-binding),g" {} \;
 else
   echo -e "\n${lightpurple}HTTP Server Setup${normal}"
   echo -e "You have two installation options for the system:"

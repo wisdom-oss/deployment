@@ -16,6 +16,7 @@ networks:
 # Base Services for using the Product
 services:
   reverse-proxy:
+    stop_grace_period: 1m
     image: caddy:alpine
     restart: always
     ports:
@@ -34,6 +35,7 @@ services:
   frontend:
     build: https://github.com/wisdom-oss/frontend-workspace.git#main
     image: wisdom-oss/frontend:main-latest
+    stop_grace_period: 1m
     hostname: frontend
     restart: always
     depends_on:
@@ -49,6 +51,7 @@ services:
 
   message-broker:
     image: rabbitmq:3.9.9-management-alpine
+    stop_grace_period: 1m
     restart: always
     hostname: message-broker
     ports:
@@ -65,6 +68,7 @@ services:
 
   postgres:
     image: postgis/postgis:14-master
+    stop_grace_period: 1m
     restart: always
     hostname: postgres
     ports:
@@ -82,6 +86,7 @@ services:
 
   redis:
     image: redis:alpine
+    stop_grace_period: 1m
     restart: always
     hostname: redis
     expose:
@@ -97,6 +102,7 @@ services:
 
   service-registry:
     build: https://github.com/wisdom-oss/service-registry.git#main
+    stop_grace_period: 1m
     image: wisdom-oss/service-registry:main-latest
     restart: always
     ports:
@@ -111,6 +117,7 @@ services:
   api-gateway:
     build: https://github.com/wisdom-oss/api-gateway.git#main
     image: wisdom-oss/api-gateway:main-latest
+    stop_grace_period: 1m
     restart: always
     hostname:
       api-gateway
@@ -131,6 +138,7 @@ services:
   auth-service:
     build: https://github.com/wisdom-oss/authorization-service.git#main
     image: wisdom-oss/authorization-service:main-latest
+    stop_grace_period: 1m
     restart: always
     deploy:
       mode: replicated
@@ -154,6 +162,7 @@ services:
   amqp-auth-service:
     build: https://github.com/wisdom-oss/amqp-authorization-service.git#main
     image: wisdom-oss/service-amqp-authorization:main-latest
+    stop_grace_period: 1m
     restart: always
     deploy:
       mode: replicated
@@ -175,6 +184,7 @@ services:
   usage-forecast-rest:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
     image: wisdom-oss/water-usage-forecasts-rest:main-latest
+    stop_grace_period: 1m
     restart: always
     deploy:
       mode: replicated
@@ -205,6 +215,7 @@ services:
   usage-forecast-calculations:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
     image: wisdom-oss/water-usage-forecasts-calculations:main-latest
+    stop_grace_period: 1m
     restart: always
     deploy:
       mode: replicated
@@ -231,6 +242,7 @@ services:
   geodata-service:
     build: https://github.com/wisdom-oss/service-geo-data-rest.git#main
     image: wisdom-oss/services/geo-data-rest:main-latest
+    stop_grace_period: 1m
     restart: always
     deploy:
       mode: replicated
@@ -255,6 +267,7 @@ services:
   consumers:
     build: https://github.com/wisdom-oss/service-consumers.git#main
     image: wisdom-oss/services/consumers:main
+    stop_grace_period: 1m
     restart: always
     deploy:
       mode: replicated
@@ -275,6 +288,7 @@ services:
   water-rights:
     build: https://github.com/wisdom-oss/service-water-rights.git#main
     image: wisdom-oss/services/water-rights:main
+    stop_grace_period: 1m
     restart: always
     deploy:
       mode: replicated

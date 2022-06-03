@@ -66,4 +66,4 @@ spring:
         - id: water-usage-history-rest-service
           uri: lb://water-usage-history
           predicates:
-            - Path=/water-rights/**
+            - Path=/water-usage-history/**

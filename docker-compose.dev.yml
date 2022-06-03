@@ -305,3 +305,25 @@ services:
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=water-rights-rest
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+
+
+  water-usage-history:
+    build: https://github.com/wisdom-oss/service-water-rights.git#main
+    image: wisdom-oss/services/water-rights:main
+    stop_grace_period: 1m
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    depends_on:
+      - amqp-auth-service
+      - message-broker
+      - service-registry
+      - postgres
+    expose:
+      - 5000
+    environment:
+      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
+      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
+      - CONFIG_SERVICE_NAME=water-rights-rest
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry 

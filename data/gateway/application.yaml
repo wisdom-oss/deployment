@@ -28,6 +28,10 @@ spring:
         enabled: false
       ribbon:
         enabled: true
+      health-check:
+        refetch-instances-interval: 1s
+        repeat-health-check: false
+        refetch-instances: true
     gateway:
       httpclient:
         response-timeout: 1h

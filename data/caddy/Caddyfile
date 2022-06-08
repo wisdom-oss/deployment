@@ -10,6 +10,11 @@
     path /api/*
   }
 
+  @beta-backend {
+    method GET PUT POST PATCH DELETE
+    path /beta-api/*
+  }
+
   handle @frontend {
     reverse_proxy frontend:80 {
       header_down -Server
@@ -19,6 +24,13 @@
   handle @backend {
     uri strip_prefix /api
     reverse_proxy api-gateway:8090 {
+      header_down -Server
+    }
+  }
+
+  handle @beta-backend {
+    uri strip_prefix /api
+    reverse_proxy api-gateway-beta:8090 {
       header_down -Server
     }
   }

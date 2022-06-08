@@ -22,6 +22,10 @@ eureka:
 spring:
   application:
     name: WISdoM API Gateway
+  rabbitmq:
+    username: wisdom
+    password: <<gen-pass-rabbitmq>>
+    host: message-broker
   cloud:
     loadbalancer:
       cache:

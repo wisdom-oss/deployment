@@ -327,3 +327,25 @@ services:
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=water-usage-history
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+
+
+  api-gateway-beta:
+    build: https://github.com/wisdom-oss/api-gateway.git#dev
+    image: wisdom-oss/api-gateway:dev-latest
+    restart: always
+    hostname:
+      api-gateway-beta
+    expose:
+      - 8090
+    depends_on:
+      - service-registry
+      - message-broker
+    environment:
+      SERVICE_REGISTRY_HOST: service-registry
+    volumes:
+      - ./data/gateway:/opt/api-gateway/config
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 5

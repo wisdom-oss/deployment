@@ -29,7 +29,7 @@
   }
 
   handle @beta-backend {
-    uri strip_prefix /api
+    uri strip_prefix /beta-api
     reverse_proxy api-gateway-beta:8090 {
       header_down -Server
     }

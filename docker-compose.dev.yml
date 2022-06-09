@@ -284,6 +284,7 @@ services:
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=consumers-rest
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+      - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
 
   water-rights:
     build: https://github.com/wisdom-oss/service-water-rights.git#main
@@ -305,6 +306,7 @@ services:
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=water-rights-rest
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+      - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
 
 
   water-usage-history:

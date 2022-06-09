@@ -89,8 +89,8 @@ services:
     stop_grace_period: 1m
     restart: always
     hostname: redis
-    expose:
-      - 6379
+    ports:
+      - 6379:6379
     volumes:
       - redis_persistence:/data
     command: redis-server --save 20 1 --loglevel warning --requirepass <<gen-redis-pass>>

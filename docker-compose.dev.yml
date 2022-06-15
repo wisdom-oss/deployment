@@ -202,7 +202,7 @@ services:
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry
       - CONFIG_SERVICE_NAME=water-usage-forecasts-rest
       - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
-      - CONFIG_USE_REDIS=false
+      - CONFIG_USE_REDIS=true
     labels:
       - wisdom.oss.type=backend-service
       - wisdom.oss.protocol=AMQP,HTTP

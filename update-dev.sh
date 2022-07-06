@@ -135,7 +135,7 @@ echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 if [[ ! -f "./.tokens/.kong-prepared" ]]; then
   echo -e "${lightgreen}3. Preparing databases${nocolor}\n"
   $sudo docker compose -f docker-compose.dev.yml up -d postgres
-  $sudo docker compose -f docker-compose.dev.yml exec postgres psql -U postgres -c "CREATE SCHEMA IF NOT EXISTS kong"
+  $sudo docker compose -f docker-compose.dev.yml exec postgres "psql -U postgres -c \"CREATE SCHEMA IF NOT EXISTS kong\""
   $sudo docker run --rm --network=wisdom-oss --env-file ./kong-environment.env kong/kong-gateway:2.8.1.1-alpine kong migrations bootstrap
   $sudo touch ./.tokens/.kong-prepared
   echo -e "${cyan}4. Starting the project${nocolor}\n"

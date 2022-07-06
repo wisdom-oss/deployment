@@ -342,7 +342,7 @@ services:
       - KONG_PG_HOST=postgres
       - KONG_PG_USER=postgres
       - KONG_PG_PASSWORD=<<gen-postgres-pass>>
-      - KONG_DATABASE=kong
+      - KONG_DATABASE=postgres
       - KONG_PROXY_ACCESS_LOG=/dev/stdout
       - KONG_ADMIN_ACCESS_LOG=/dev/stdout
       - KONG_PROXY_ERROR_LOG=/dev/stderr

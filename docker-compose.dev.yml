@@ -334,8 +334,10 @@ services:
   kong-gateway:
     image: kong/kong-gateway:2.8.0.0-alpine
     restart: always
-    hostname:
-      - kong-gateway
+    stop_grace_period: 1m
+    hostname: kong-gateway
+    depends_on:
+      - postgres
     environment:
       - KONG_PG_HOST=postgres
       - KONG_PG_USER=postgres

@@ -128,9 +128,18 @@ else
 fi
 
 
-echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
+echo -e "${cyan}2. Creating new Docker Images${nocolor}\n"
 $sudo docker compose -f docker-compose.dev.yml build
 echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
-echo -e "${cyan}3 Restarting the containers${nocolor}\n"
-$sudo docker compose -f docker-compose.dev.yml up -d
+if [[ -f "./.tokens/.kong-prepared" ]]; then
+  echo -e "${cyan}3. Preparing databases${nocolor}\n"
+  $sudo docker compose -f docker-compose.dev.yml up -d postgres
+  $sudo docker run --rm --network=wisdom-oss --env-file ./kong-environment.env kong/kong-gateway:2.8.1.1-alpine kong migrations bootstrap
+  $sudo touch ./.tokens/.kong-prepared
+  echo -e "${cyan}4. Starting the project${nocolor}\n"
+  $sudo docker compose -f docker-compose.dev.yml up -d
+else
+  echo -e "${cyan}3. Starting the project${nocolor}\n"
+  $sudo docker compose -f docker-compose.dev.yml up -d
+fi

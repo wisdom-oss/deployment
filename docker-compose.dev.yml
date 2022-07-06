@@ -331,23 +331,21 @@ services:
       - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
 
 
-  api-gateway-beta:
-    build: https://github.com/wisdom-oss/api-gateway.git#dev
-    image: wisdom-oss/api-gateway:dev-latest
+  kong-gateway:
+    image: kong/kong-gateway:2.8.0.0-alpine
     restart: always
     hostname:
-      api-gateway-beta
-    expose:
-      - 8090
-    depends_on:
-      - service-registry
-      - message-broker
+      - kong-gateway
     environment:
-      SERVICE_REGISTRY_HOST: service-registry
-    volumes:
-      - ./data/gateway:/opt/api-gateway/config
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+      - KONG_PG_HOST=postgres
+      - KONG_PG_USER=postgres
+      - KONG_PG_PASSWORD=<<gen-postgres-pass>>
+      - KONG_DATABASE=kong
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+    ports:
+      - 9001:8001
+      - 8080:8000

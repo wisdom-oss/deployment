@@ -349,5 +349,5 @@ services:
       - KONG_ADMIN_ERROR_LOG=/dev/stderr
       - KONG_ADMIN_LISTEN=0.0.0.0:8001
     ports:
-      - 9001:8001
+      - 10001:8001
       - 8080:8000

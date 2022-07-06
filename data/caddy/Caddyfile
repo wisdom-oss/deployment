@@ -12,7 +12,7 @@
 
   @beta-backend {
     method GET PUT POST PATCH DELETE
-    path /beta-api/*
+    path /kong/*
   }
 
   handle @frontend {
@@ -29,11 +29,9 @@
   }
 
   handle @beta-backend {
-    uri strip_prefix /beta-api
-    reverse_proxy api-gateway-beta:8090 {
+    uri strip_prefix /kong
+    reverse_proxy kong-gateway:8000 {
       header_down -Server
     }
   }
-
-
 }

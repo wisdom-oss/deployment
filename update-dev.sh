@@ -51,7 +51,7 @@ echo -e "${lightcyan}Updater for the WISdoM OSS Project${nocolor}"
 
 echo -e "${orange}This script will update all Docker Images and configuration files to the latest
 version. This updater will try to keep the changes you may have made locally,
-but in some cases this will not be possible. The updater will exit and you 
+but in some cases this will not be possible. The updater will exit and you
 will need to make the apropriate changes manually by running 'git' commands.${nocolor}"
 
 echo -en "${yellow}Do you whish to continue with the updates? (y/N): ${nocolor}"
@@ -118,7 +118,7 @@ else
         echo -en "You entered \"${hostname}\". Is this correct? [Y/n]: "
         read -r confirm
         if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]] ; then
-          echo $hostname | $sudo tee "./.tokens/.caddy-binding" 
+          echo $hostname | $sudo tee "./.tokens/.caddy-binding"
           find . -type f -exec $sudo sed -i "s,<<${caddy_binding}>>,$(cat ./.tokens/.caddy-binding),g" {} \;
           break
         fi

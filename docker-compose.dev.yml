@@ -158,7 +158,7 @@ services:
       options:
         max-size: 5m
         max-file: 5
-  
+
   T-auth-service:
     build: https://github.com/wisdom-oss/authorization-service.git#dev
     image: wisdom-oss/authorization-service:dev-latest
@@ -175,7 +175,7 @@ services:
     environment:
       - CONFIG_SERVICE_NAME=authorization-service
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_KONG_HOST=kong
+      - CONFIG_KONG_HOST=kong-gateway
       - CONFIG_KONG_ADMIN_PORT=8001
       - CONFIG_KONG_SERVICE_SLUG=auth
     logging:
@@ -308,7 +308,7 @@ services:
       - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=consumers-rest
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
       - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
 
   water-rights:
@@ -330,7 +330,7 @@ services:
       - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=water-rights-rest
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
       - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
 
 
@@ -353,7 +353,7 @@ services:
       - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
       - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
       - CONFIG_SERVICE_NAME=water-usage-history
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry 
+      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
 
 
   kong-gateway:

@@ -334,7 +334,7 @@ services:
       - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
 
 
-  water-rights:
+  T-water-rights:
     build: https://github.com/wisdom-oss/service-water-rights.git#dev
     image: wisdom-oss/services/water-rights:dev-latest
     stop_grace_period: 1m

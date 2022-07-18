@@ -34,8 +34,6 @@ ROOT_DIRECTORY="/opt/wisdom-oss"
 # Mapping of passwords which shall be generated and in which file it may be needed
 password_blanks=("gen-pass-rabbitmq" "gen-postgres-pass" "gen-redis-pass")
 caddy_binding="binding"
-# Location of the docker-compose file relative to the current directory
-compose_file_location="./docker-compose.yml"
 
 # Sudo Prepend if not started with sudo
 sudo=''
@@ -46,6 +44,22 @@ sudo=''
 if [[ $(id -u) -ne 0 ]]; then
     sudo='sudo -E'
 fi
+UNATTENDED=0
+while getopts "yh:" OPTION; do
+  case "$OPTION" in
+    y)
+      UNATTENDED=1
+      ;;
+    h)
+      echo -e "Script usage: $(basename \$0) [-y] [-h]\nUse the -y flag to run the upgrade script unattended and to allow all changes" >&2
+      exit 0
+      ;;
+    ?)
+      echo -e "Script usage: $(basename \$0) [-y] [-h]" >&2
+      exit 1
+      ;;
+  esac
+done
 
 echo -e "${lightcyan}Updater for the WISdoM OSS Project${nocolor}"
 
@@ -54,9 +68,13 @@ version. This updater will try to keep the changes you may have made locally,
 but in some cases this will not be possible. The updater will exit and you
 will need to make the apropriate changes manually by running 'git' commands.${nocolor}"
 
-echo -en "${yellow}Do you whish to continue with the updates? (y/N): ${nocolor}"
-read -r confirmUpdaterExecution && [[ $confirmUpdaterExecution == [yY] || $confirmUpdaterExecution == [yY][eE][sS] ]] ||  exit 1
+if [ $UNATTENDED -eq 0 ]; then
+  echo -en "${yellow}Do you whish to continue with the updates? (y/N): ${nocolor}"
+  read -r confirmUpdaterExecution && [[ $confirmUpdaterExecution == [yY] || $confirmUpdaterExecution == [yY][eE][sS] ]] ||  exit 1
+fi
 clear
+
+cd $ROOT_DIRECTORY || return
 
 echo -e "${purple}Checking for a newer update script${nocolor}"
 ORIGINAL_SUM=$(sha1sum update.sh)
@@ -134,3 +152,6 @@ echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
 echo -e "${cyan}3 Restarting the containers${nocolor}\n"
 $sudo docker compose up -d
+
+echo -e "${cyan}POST 1 - Cleaning the build environment${nocolor}\n"
+$sudo docker image prune -a -f

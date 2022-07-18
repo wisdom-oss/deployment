@@ -35,7 +35,7 @@ ROOT_DIRECTORY="/opt/wisdom-oss"
 password_blanks=("gen-pass-rabbitmq" "gen-postgres-pass" "gen-redis-pass")
 caddy_binding="binding"
 # Location of the docker-compose file relative to the current directory
-compose_file_location="./docker-compose.yml"
+compose_file_location="./docker-compose.dev.yml"
 
 # Sudo Prepend if not started with sudo
 sudo=''
@@ -46,6 +46,22 @@ sudo=''
 if [[ $(id -u) -ne 0 ]]; then
     sudo='sudo -E'
 fi
+UNATTENDED=0
+while getopts "yh:" OPTION; do
+  case "$OPTION" in
+    y)
+      UNATTENDED=1
+      ;;
+    h)
+      echo -e "Script usage: $(basename \$0) [-y] [-h]\nUse the -y flag to run the upgrade script unattended and to allow all changes" >&2
+      exit 0
+      ;;
+    ?)
+      echo -e "Script usage: $(basename \$0) [-y] [-h]" >&2
+      exit 1
+      ;;
+  esac
+done
 
 echo -e "${lightcyan}Updater for the WISdoM OSS Project${nocolor}"
 
@@ -54,9 +70,13 @@ version. This updater will try to keep the changes you may have made locally,
 but in some cases this will not be possible. The updater will exit and you
 will need to make the apropriate changes manually by running 'git' commands.${nocolor}"
 
-echo -en "${yellow}Do you whish to continue with the updates? (y/N): ${nocolor}"
-read -r confirmUpdaterExecution && [[ $confirmUpdaterExecution == [yY] || $confirmUpdaterExecution == [yY][eE][sS] ]] ||  exit 1
+if [ $UNATTENDED -eq 0 ]; then
+  echo -en "${yellow}Do you whish to continue with the updates? (y/N): ${nocolor}"
+  read -r confirmUpdaterExecution && [[ $confirmUpdaterExecution == [yY] || $confirmUpdaterExecution == [yY][eE][sS] ]] ||  exit 1
+fi
 clear
+
+cd $ROOT_DIRECTORY || return
 
 echo -e "${purple}Checking for a newer update script${nocolor}"
 ORIGINAL_SUM=$(sha1sum update-dev.sh)
@@ -129,18 +149,20 @@ fi
 
 
 echo -e "${cyan}2. Creating new Docker Images${nocolor}\n"
-$sudo docker compose -f docker-compose.dev.yml build
+$sudo docker compose -f $compose_file_location build
 echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
 if [[ ! -f "./.tokens/.kong-prepared" ]]; then
   echo -e "${lightgreen}3. Preparing databases${nocolor}\n"
-  $sudo docker compose -f docker-compose.dev.yml up -d postgres
-  $sudo docker compose -f docker-compose.dev.yml exec postgres psql -U postgres -c "CREATE DATABASE kong"
+  $sudo docker compose -f $compose_file_location up -d postgres
+  $sudo docker compose -f $compose_file_location exec postgres psql -U postgres -c "CREATE DATABASE kong"
   $sudo docker run --rm --network=wisdom-oss --env-file ./kong-environment.env kong/kong-gateway:2.8.1.1-alpine kong migrations bootstrap
   $sudo touch ./.tokens/.kong-prepared
   echo -e "${cyan}4. Starting the project${nocolor}\n"
-  $sudo docker compose -f docker-compose.dev.yml up -d
+  $sudo docker compose -f $compose_file_location up -d
 else
   echo -e "${cyan}3. Starting the project${nocolor}\n"
-  $sudo docker compose -f docker-compose.dev.yml up -d
+  $sudo docker compose -f $compose_file_location up -d
 fi
+echo -e "${cyan}Post 1 - Cleaning the build environemnt${nocolor}\n"
+$sudo docker image prune -a -f

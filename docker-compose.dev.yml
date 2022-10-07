@@ -26,6 +26,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
+      # file server for static files
+      - ./data/files:/files
     logging:
       driver: "json-file"
       options:

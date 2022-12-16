@@ -6,7 +6,7 @@
 # The services are directly built from the main branch of their repositories to include the latests
 # features. This has the caveat that some changes may be breaking and some services may not work.
 # If you depend on this dashboard please use the stable versions in docker-compose.yml
-
+version: '3.8'
 # The name of the docker compose object
 name: wisdom
 

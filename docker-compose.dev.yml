@@ -1,404 +1,268 @@
+# WISdoM OSS Docker Compose File
+# branch: main
+# Last Update: 07.11.2022
+#
+# This docker compose file contains all service definitions used by the full WISdoM dashboard.
+# The services are directly built from the main branch of their repositories to include the latests
+# features. This has the caveat that some changes may be breaking and some services may not work.
+# If you depend on this dashboard please use the stable versions in docker-compose.yml
 version: '3.8'
+# The name of the docker compose object
+name: wisdom
 
-# Named volumes
-volumes:
-  caddy_data:
-  caddy_config:
-  postgres_data:
-  redis_persistence:
-
-# Networking Setup
+# Change the name of the network bridge
 networks:
-  default:
-    name: wisdom-oss
-    driver: bridge
+   wisdom:
+    external: true
 
-# Base Services for using the Product
+# Volumes for the services:
+volumes:
+   # Storage for automatically generated data from the reverse-proxy
+   caddy_data:
+   # Storage for automatically generated configurations from the reverse-proxy
+   caddy_config:
+   # Storage for the data stored in the postgres
+   postgres_data:
+      external: true
+   # Storage for the redis persistance
+   redis:
+   # Storage for the geoip data
+   geoip:
+
+# Configuration files for the services
+configs:
+   caddyfile:
+      file: ./.configs/Caddyfile
+
+# Services for the WISdoM OSS
 services:
-  reverse-proxy:
-    stop_grace_period: 1m
-    image: caddy:alpine
-    restart: always
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - caddy_data:/data
-      - caddy_config:/config
-      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
-      # file server for static files
-      - ./data/files:/files
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   # A caddy server  running a reverse proxy for the frontend and the api gateway. Furthermore, the
+   # server hosts the static files
+   http-entrypoint:
+      image: caddy:alpine
+      restart: always
+      networks:
+         - wisdom
+      ports:
+         # Open the HTTP and HTTPS ports up on the host
+         - 80:80
+         - 443:443
+         - 8080:8080
+      volumes:
+         # Store the automatically generated data in a volume
+         - caddy_data:/data
+         # Store the automatically generated configuration files in a volume
+         - caddy_config:/config
+         # Mount the static files into the container to make them available
+         - ./static:/files:ro
+      env_file:
+         - .env
+      configs:
+         - source: caddyfile
+           target: /etc/caddy/Caddyfile
+      logging: &logger_config
+         driver: "json-file"
+         options:
+            max-size: 5m
+            max-file: 3
 
-  frontend:
-    build: https://github.com/wisdom-oss/frontend-workspace.git#main
-    image: wisdom-oss/frontend:main-latest
-    stop_grace_period: 1m
-    hostname: frontend
-    restart: always
-    depends_on:
-      - api-gateway
-      - reverse-proxy
-    expose:
-      - 80
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   # The database containing all data, equipped with the PostGIS extension to store
+   # geospatial data
+   postgres:
+      image: postgis/postgis:14-3.3-alpine
+      restart: always
+      hostname: postgres
+      networks:
+         - wisdom
+      expose:
+         - 5432
+      volumes:
+         # Store the files created by postgres in the
+         - postgres_data:/var/lib/postgresql/data
+         - ./.sql-scripts/:/docker-entrypoint-initdb.d/
+      environment:
+         - POSTGRES_DB=wisdom
+      env_file:
+         - .env
+      logging: *logger_config
 
-  message-broker:
-    image: rabbitmq:3.9.9-management-alpine
-    stop_grace_period: 1m
-    restart: always
-    hostname: message-broker
-    ports:
-      - 5672:5672
-      - 15672:15672
-    environment:
-      - RABBITMQ_DEFAULT_USER=wisdom
-      - RABBITMQ_DEFAULT_PASS=<<gen-pass-rabbitmq>>
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   # The api gateway for the microservice architecture. It is based on the kong-api-gateway
+   # which has
+   api-gateway:
+      build: ./.builds/kong/
+      image: wisdom-oss/api-gateway:latest
+      restart: always
+      networks:
+         - wisdom
+      stop_grace_period: 1m
+      hostname: api-gateway
+      depends_on:
+         - postgres
+      environment:
+         - KONG_DATABASE=postgres
+         - KONG_PROXY_ACCESS_LOG=/dev/stdout
+         - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+         - KONG_PROXY_ERROR_LOG=/dev/stderr
+         - KONG_ADMIN_ERROR_LOG=/dev/stderr
+         - KONG_ADMIN_LISTEN=0.0.0.0:8001
+      env_file:
+         - .env
+      expose:
+         - 8000
+         - 8001
+      logging: *logger_config
 
-  postgres:
-    image: postgis/postgis:14-master
-    stop_grace_period: 1m
-    restart: always
-    hostname: postgres
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_PASSWORD=<<gen-postgres-pass>>
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   # The message broker which is used to transmit messages between the different modules
+   rabbitmq:
+      image: rabbitmq:3-alpine
+      restart: always
+      hostname: rabbitmq
+      expose:
+         - 5672
+      env_file:
+         - .env
+      logging: *logger_config
 
+   redis:
+      image: docker.io/library/redis:alpine
+      command: --save 60 1 --loglevel warning
+      restart: unless-stopped
+      networks:
+          - wisdom
+      healthcheck:
+         test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+         start_period: 20s
+         interval: 30s
+         retries: 5
+         timeout: 3s
+      volumes:
+         - redis:/data
+      logging: *logger_config
 
-  redis:
-    image: redis:alpine
-    stop_grace_period: 1m
-    restart: always
-    hostname: redis
-    ports:
-      - 6379:6379
-    volumes:
-      - redis_persistence:/data
-    command: redis-server --save 20 1 --loglevel warning --requirepass <<gen-redis-pass>>
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   authentik:
+      image: ghcr.io/goauthentik/server:latest
+      restart: unless-stopped
+      hostname: authentik
+      command: server
+      env_file:
+         - .env
+      volumes:
+         - ./media:/media
+         - ./custom-templates:/templates
+      ports:
+         - 127.0.0.1:9000:9000
+         - 127.0.0.1:9443:9443
 
-  service-registry:
-    build: https://github.com/wisdom-oss/service-registry.git#main
-    stop_grace_period: 1m
-    image: wisdom-oss/service-registry:main-latest
-    restart: always
-    ports:
-      - 8761:8761
-    hostname: service-registry
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   ##### WISdoM Containers #####
+   # The container containing the frontend application
+   frontend:
+      build: https://github.com/wisdom-oss/frontend-workspace.git#dev
+      image: wisdom-oss/frontend:main
+      hostname: frontend
+      networks:
+         - wisdom
+      restart: always
+      # Expose the port 80 to other services
+      expose:
+         - 80
+      logging: *logger_config
 
-  api-gateway:
-    build: https://github.com/wisdom-oss/api-gateway.git#main
-    image: wisdom-oss/api-gateway:main-latest
-    stop_grace_period: 1m
-    restart: always
-    hostname:
-      api-gateway
-    expose:
-      - 8090
-    depends_on:
-      - service-registry
-    environment:
-      SERVICE_REGISTRY_HOST: service-registry
-    volumes:
-      - ./data/gateway:/opt/api-gateway/config
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   # The REST server used to accept requests for the linear/logarithmic/polynomial
+   # water usage forecasts
+   s-usage-forecast-rest:
+      build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#dev
+      image: wisdom-oss/service/water-usage-forcast-rest:main
+      stop_grace_period: 1m
+      networks:
+         - wisdom
+      restart: always
+      deploy:
+         mode: replicated
+         replicas: 5
+      depends_on:
+         - postgres
+         - api-gateway
+      expose:
+         - 5000
+      env_file:
+         - .env
+      logging: *logger_config
 
-  auth-service:
-    build: https://github.com/wisdom-oss/authorization-service.git#main
-    image: wisdom-oss/authorization-service:main-latest
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 5
-    depends_on:
-      - postgres
-      - service-registry
-    expose:
-      - 5000
-    hostname: authorization-service
-    environment:
-      - CONFIG_SERVICE_NAME=authorization-service
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   # The client which calculates the water usage forecasts which are requested from the REST server
+   # for the forecasts
+   s-usage-forecast-calculations:
+      build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#dev
+      image: wisdom-oss/service/water-usage-forcast-calculations:main
+      stop_grace_period: 1m
+      restart: always
+      deploy:
+         mode: replicated
+         replicas: 5
+      depends_on:
+         - rabbitmq
+         - postgres
+      env_file:
+         - .env
+      logging: *logger_config
 
-  T-auth-service:
-    build: https://github.com/wisdom-oss/authorization-service.git#dev
-    image: wisdom-oss/authorization-service:dev-latest
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 5
-    depends_on:
-      - postgres
-      - kong-gateway
-    expose:
-      - 5000
-    environment:
-      - CONFIG_SERVICE_NAME=authorization-service
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_KONG_HOST=kong-gateway
-      - CONFIG_KONG_ADMIN_PORT=8001
-      - CONFIG_KONG_SERVICE_SLUG=auth
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   # A microservice allowing access to the geospatial data stored in the postgres database
+   s-geodata:
+      build: https://github.com/wisdom-oss/service-geo-data-rest.git#dev
+      image: wisdom-oss/service/geodata:main
+      restart: always
+      deploy:
+         mode: replicated
+         replicas: 5
+      depends_on:
+         - postgres
+         - api-gateway
+      env_file:
+         - .env
+      logging: *logger_config
 
-  amqp-auth-service:
-    build: https://github.com/wisdom-oss/amqp-authorization-service.git#main
-    image: wisdom-oss/service-amqp-authorization:main-latest
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 5
-    depends_on:
-      - postgres
-      - message-broker
-    hostname: amqp-authorization-service
-    environment:
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F?heartbeat=600
-      - CONFIG_AMQP_BIND_EXCHANGE=authorization-service
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   # A microservce allowing access to the consumers stored in the postgres database
+   s-consumers:
+      build: https://github.com/wisdom-oss/service-consumers.git#dev
+      image: wisdom-oss/service/consumers:main
+      restart: always
+      deploy:
+         mode: replicated
+         replicas: 5
+      depends_on:
+         - postgres
+         - api-gateway
+      env_file:
+         - .env
+      logging: *logger_config
 
-  usage-forecast-rest:
-    build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
-    image: wisdom-oss/water-usage-forecasts-rest:main-latest
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 5
-    depends_on:
-      - message-broker
-      - redis
-      - service-registry
-    expose:
-     - 5000
-    environment:
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - CONFIG_AMQP_EXCHANGE=water-usage-forecasts
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
-      - CONFIG_SERVICE_NAME=water-usage-forecasts-rest
-      - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
-      - CONFIG_USE_REDIS=true
-    labels:
-      - wisdom.oss.type=backend-service
-      - wisdom.oss.protocol=AMQP,HTTP
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   s-water-rights:
+      build: https://github.com/wisdom-oss/service-water-rights.git#dev
+      image: wisdom-oss/service/water-rights:main
+      restart: always
+      deploy:
+         mode: replicated
+         replicas: 5
+      depends_on:
+         - postgres
+         - api-gateway
+      env_file:
+         - .env
+      logging: *logger_config
 
-  usage-forecast-calculations:
-    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#main
-    image: wisdom-oss/water-usage-forecasts-calculations:main-latest
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 5
-    depends_on:
-      - message-broker
-      - postgres
-    expose:
-     - 5000
-    environment:
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F?heartbeat=1800
-      - CONFIG_AMQP_BIND_EXCHANGE=water-usage-forecasts
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_SERVICE_NAME=water-usage-forecasts-calculations
-    labels:
-      - wisdom.oss.type=backend-service
-      - wisdom.oss.protocol=AMQP
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
+   s-bim-data:
+      build: https://github.com/wisdom-oss/service-bim-data#dev
+      image: wisdom-oss/service/bim-data:main
+      restart: always
+      deploy:
+         mode: replicated
+         replicas: 5
+      depends_on:
+         - postgres
+         - api-gateway
+      env_file:
+         - .env
 
-  geodata-service:
-    build: https://github.com/wisdom-oss/service-geo-data-rest.git#main
-    image: wisdom-oss/services/geo-data-rest:main-latest
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 5
-    depends_on:
-      - message-broker
-      - postgres
-      - service-registry
-    expose:
-      - 5000
-    environment:
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_SERVICE_NAME=geodata-rest
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 5m
-        max-file: 5
-
-  consumers:
-    build: https://github.com/wisdom-oss/service-consumers.git#main
-    image: wisdom-oss/services/consumers:main
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
-    depends_on:
-      - amqp-auth-service
-      - message-broker
-      - service-registry
-      - postgres
-    expose:
-      - 5000
-    environment:
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_SERVICE_NAME=consumers-rest
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
-      - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
-
-  water-rights:
-    build: https://github.com/wisdom-oss/service-water-rights.git#main
-    image: wisdom-oss/services/water-rights:main
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
-    depends_on:
-      - amqp-auth-service
-      - message-broker
-      - service-registry
-      - postgres
-    expose:
-      - 5000
-    environment:
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_SERVICE_NAME=water-rights-rest
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
-      - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
+      
 
 
-  T-water-rights:
-    build: https://github.com/wisdom-oss/service-water-rights.git#dev
-    image: wisdom-oss/services/water-rights:dev-latest
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
-    depends_on:
-      - amqp-auth-service
-      - message-broker
-      - service-registry
-      - postgres
-    expose:
-      - 5000
-    environment:
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_KONG_HOST=kong-gateway
-      - CONFIG_KONG_ADMIN_PORT=8001
-      - CONFIG_KONG_SERVICE_SLUG=water-rights
-      - CONFIG_REDIS_DSN=redis://:<<gen-redis-pass>>@redis/0
 
-
-  water-usage-history:
-    build: https://github.com/wisdom-oss/service-water-usage-history.git#main
-    image: wisdom-oss/services/water-usage-history:main
-    stop_grace_period: 1m
-    restart: always
-    deploy:
-      mode: replicated
-      replicas: 1
-    depends_on:
-      - amqp-auth-service
-      - message-broker
-      - service-registry
-      - postgres
-    expose:
-      - 5000
-    environment:
-      - CONFIG_AMQP_DSN=amqp://wisdom:<<gen-pass-rabbitmq>>@message-broker/%2F
-      - CONFIG_DB_DSN=postgresql://postgres:<<gen-postgres-pass>>@postgres:5432/wisdom
-      - CONFIG_SERVICE_NAME=water-usage-history
-      - CONFIG_SERVICE_REGISTRY_HOST=service-registry
-
-
-  kong-gateway:
-    image: kong/kong-gateway:2.8.1.1-alpine
-    restart: always
-    stop_grace_period: 1m
-    hostname: kong-gateway
-    depends_on:
-      - postgres
-    environment:
-      - KONG_PG_HOST=postgres
-      - KONG_PG_USER=postgres
-      - KONG_PG_PASSWORD=<<gen-postgres-pass>>
-      - KONG_DATABASE=postgres
-      - KONG_PROXY_ACCESS_LOG=/dev/stdout
-      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
-      - KONG_PROXY_ERROR_LOG=/dev/stderr
-      - KONG_ADMIN_ERROR_LOG=/dev/stderr
-      - KONG_ADMIN_LISTEN=0.0.0.0:8001
-    ports:
-      - 10001:8001
-      - 8080:8000

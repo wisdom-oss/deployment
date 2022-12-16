@@ -1,0 +1,48 @@
+{
+	auto_https off
+}
+
+${CADDY_FRONTEND_BINDING} {
+	@frontend {
+		method GET
+		path *
+	}
+
+	@backend {
+		method GET PUT POST PATCH DELETE
+		path /api/*
+	}
+
+	@authentik {
+		method GET PUT POST PATCH DELETE
+		path /authentik/*
+	}
+
+	@files {
+		method GET
+		path /files/*
+	}
+
+	handle @frontend {
+		reverse_proxy frontend:80 {
+			header_down -Server
+		}
+	}
+
+	handle @backend {
+		uri strip_prefix /api
+		reverse_proxy api-gateway:8000 {
+			header_down -Server
+		}
+	}
+
+	handle @files {
+		uri strip_prefix /files
+		root * /files
+		file_server
+	}
+}
+
+${CADDY_AUTHENTIK_BINDING} {
+	reverse_proxy authentik:9000
+}

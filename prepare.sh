@@ -86,7 +86,6 @@ read -rp "Please select a installation method [1]: " option
 
 if [[ $option == 1 || $option = "" ]]
 then
-  echo ":80" | $sudo tee "./.tokens/.caddy-binding"
   $sudo sed -i "s/<<${frontend_binding}>>/:80/g" .env
   break
 elif [[ $option == 2 ]]

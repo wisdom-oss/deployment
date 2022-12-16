@@ -107,4 +107,4 @@ echo -e "${lightblue}Cloning files for WISdoM OSS Version${normal}"
 $sudo mkdir -p $ROOT_DIRECTORY
 cd $ROOT_DIRECTORY || exit 1
 $sudo git clone https://github.com/wisdom-oss/deployment.git .
-$sudo ./prepare.sh
+$sudo bash ./prepare.sh

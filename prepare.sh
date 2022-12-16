@@ -21,7 +21,7 @@ normal=$(tput sgr0)
 
 # Sudo Prepend if not started with sudo
 sudo=''
-branch="${BRANCH:=stable}"
+branch=${BRANCH:=stable}
 # Mapping of the blanks which will be replaced by random strings
 password_blanks=("postgres-user" "postgres-pass" "authentik-secret-key" "authentik-admin-pass" "authentik-admin-api-token")
 frontend_binding="frontend-binding"
@@ -111,9 +111,11 @@ $sudo docker network create wisdom
 $sudo docker compose -f "docker-compose.$branch.yml" create
 
 echo -e "${purple}Preparing the Kong API Gateway${nocolor}"
+$sudo docker compose -f "docker-compose.$branch.yml" build api-gateway
 $sudo docker compose -f "docker-compose.$branch.yml" start postgres
 sleep 15
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations bootstrap -v
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations up -v
 echo -e "${green}Starting WISdoM Platform${nocolor}"
+$sudo docker compose -f "docker-compose.$branch.yml" build
 $sudo docker compose -f "docker-compose.$branch.yml" up -d

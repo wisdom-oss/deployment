@@ -32,7 +32,8 @@ authentik_binding="authentik-binding"
 if [[ $(id -u) -ne 0 ]]; then
   sudo='sudo -E'
 fi
-
+echo -e "${orange}Using %{bold}$branch${normal}${orange}version of the project${normal}"
+$sudo cp .env-template .env
 echo -e "${lightgreen}Generating secrects with openssl${normal}"
 for field in "${password_blanks[@]}"
 do
@@ -69,6 +70,7 @@ then
 elif [[ $option == 2 || $option = "" ]]
 then
   echo -e "The authentik container will be available on the port 8080"
+  $sudo sed -i "s/<<${authentik_binding}>>/:8080/g" .env
   break
 fi
 done

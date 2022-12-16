@@ -155,7 +155,9 @@ services:
    ##### WISdoM Containers #####
    # The container containing the frontend application
    frontend:
-      build: https://github.com/wisdom-oss/frontend-workspace.git#main
+      build: 
+         context: https://github.com/wisdom-oss/frontend-workspace.git#main
+         dockerfile: Dockerfile
       image: wisdom-oss/frontend:main
       hostname: frontend
       networks:
@@ -169,7 +171,9 @@ services:
    # The REST server used to accept requests for the linear/logarithmic/polynomial
    # water usage forecasts
    s-usage-forecast-rest:
-      build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
+      build: 
+         context: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#main
+         dockerfile: Dockerfile
       image: wisdom-oss/service/water-usage-forcast-rest:main
       stop_grace_period: 1m
       networks:
@@ -249,7 +253,7 @@ services:
       logging: *logger_config
 
    s-bim-data:
-      build: https://github.com/wisdom-oss/service-bim-data#main
+      build: https://github.com/wisdom-oss/service-bim-data.git#main
       image: wisdom-oss/service/bim-data:main
       restart: always
       deploy:

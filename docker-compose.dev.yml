@@ -248,7 +248,7 @@ services:
       logging: *logger_config
 
    s-bim-data:
-      build: https://github.com/wisdom-oss/service-bim-data#dev
+      build: https://github.com/wisdom-oss/service-bim-data.git#dev
       image: wisdom-oss/service/bim-data:main
       restart: always
       deploy:

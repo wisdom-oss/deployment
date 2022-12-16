@@ -32,7 +32,7 @@ authentik_binding="authentik-binding"
 if [[ $(id -u) -ne 0 ]]; then
   sudo='sudo -E'
 fi
-echo -e "${orange}Using %{bold}$branch${normal}${orange}version of the project${normal}"
+echo -e "${orange}Using ${bold}$branch${normal}${orange}version of the project${normal}"
 $sudo cp .env-template .env
 echo -e "${lightgreen}Generating secrects with openssl${normal}"
 for field in "${password_blanks[@]}"

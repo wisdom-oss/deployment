@@ -108,6 +108,8 @@ fi
 done
 
 echo -e "${lightcyan}Preparing Docker Compose Deployment${nocolor}"
+$sudo docker volume create postgres_data
+$sudo docker compose -f "docker-compose.$branch.yml" build
 $sudo docker network create wisdom
 $sudo docker compose -f "docker-compose.$branch.yml" create
 
@@ -118,5 +120,4 @@ sleep 15
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations bootstrap -v
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations up -v
 echo -e "${green}Starting WISdoM Platform${nocolor}"
-$sudo docker compose -f "docker-compose.$branch.yml" build
 $sudo docker compose -f "docker-compose.$branch.yml" up -d

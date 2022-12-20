@@ -187,6 +187,8 @@ services:
          - api-gateway
       expose:
          - 5000
+      environment:
+         - SERVICE_PATH=/water-usage-forecasts
       env_file:
          - .env
       logging: *logger_config
@@ -219,6 +221,8 @@ services:
       depends_on:
          - postgres
          - api-gateway
+      environment:
+         - SERVICE_PATH=/geodata
       env_file:
          - .env
       logging: *logger_config
@@ -234,6 +238,8 @@ services:
       depends_on:
          - postgres
          - api-gateway
+      environment:
+         - SERVICE_PATH=/consumers
       env_file:
          - .env
       logging: *logger_config
@@ -248,6 +254,8 @@ services:
       depends_on:
          - postgres
          - api-gateway
+      environment:
+         - SERVICE_PATH=/water-rights
       env_file:
          - .env
       logging: *logger_config
@@ -262,6 +270,8 @@ services:
       depends_on:
          - postgres
          - api-gateway
+      environment:
+         - SERVICE_PATH=/bim-data
       env_file:
          - .env
 

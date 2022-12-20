@@ -8,6 +8,7 @@
 # If you depend on this dashboard please use the stable versions in docker-compose.yml
 version: '3.8'
 
+
 # Change the name of the network bridge
 networks:
    wisdom:
@@ -154,7 +155,9 @@ services:
    ##### WISdoM Containers #####
    # The container containing the frontend application
    frontend:
-      build: https://github.com/wisdom-oss/frontend-workspace.git#dev
+      build: 
+         context: https://github.com/wisdom-oss/frontend-workspace.git#stable
+         dockerfile: Dockerfile
       image: wisdom-oss/frontend:main
       hostname: frontend
       networks:
@@ -168,7 +171,9 @@ services:
    # The REST server used to accept requests for the linear/logarithmic/polynomial
    # water usage forecasts
    s-usage-forecast-rest:
-      build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#dev
+      build: 
+         context: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#stable
+         dockerfile: Dockerfile
       image: wisdom-oss/service/water-usage-forcast-rest:main
       stop_grace_period: 1m
       networks:
@@ -182,6 +187,8 @@ services:
          - api-gateway
       expose:
          - 5000
+      environment:
+         - SERVICE_PATH=/water-usage-forecasts
       env_file:
          - .env
       logging: *logger_config
@@ -189,7 +196,7 @@ services:
    # The client which calculates the water usage forecasts which are requested from the REST server
    # for the forecasts
    s-usage-forecast-calculations:
-      build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#dev
+      build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#stable
       image: wisdom-oss/service/water-usage-forcast-calculations:main
       stop_grace_period: 1m
       restart: always
@@ -205,7 +212,7 @@ services:
 
    # A microservice allowing access to the geospatial data stored in the postgres database
    s-geodata:
-      build: https://github.com/wisdom-oss/service-geo-data-rest.git#dev
+      build: https://github.com/wisdom-oss/service-geo-data-rest.git#stable
       image: wisdom-oss/service/geodata:main
       restart: always
       deploy:
@@ -214,13 +221,15 @@ services:
       depends_on:
          - postgres
          - api-gateway
+      environment:
+         - SERVICE_PATH=/geodata
       env_file:
          - .env
       logging: *logger_config
 
    # A microservce allowing access to the consumers stored in the postgres database
    s-consumers:
-      build: https://github.com/wisdom-oss/service-consumers.git#dev
+      build: https://github.com/wisdom-oss/service-consumers.git#stable
       image: wisdom-oss/service/consumers:main
       restart: always
       deploy:
@@ -229,12 +238,14 @@ services:
       depends_on:
          - postgres
          - api-gateway
+      environment:
+         - SERVICE_PATH=/consumers
       env_file:
          - .env
       logging: *logger_config
 
    s-water-rights:
-      build: https://github.com/wisdom-oss/service-water-rights.git#dev
+      build: https://github.com/wisdom-oss/service-water-rights.git#stable
       image: wisdom-oss/service/water-rights:main
       restart: always
       deploy:
@@ -243,12 +254,14 @@ services:
       depends_on:
          - postgres
          - api-gateway
+      environment:
+         - SERVICE_PATH=/water-rights
       env_file:
          - .env
       logging: *logger_config
 
    s-bim-data:
-      build: https://github.com/wisdom-oss/service-bim-data.git#dev
+      build: https://github.com/wisdom-oss/service-bim-data.git#stable
       image: wisdom-oss/service/bim-data:main
       restart: always
       deploy:
@@ -257,6 +270,8 @@ services:
       depends_on:
          - postgres
          - api-gateway
+      environment:
+         - SERVICE_PATH=/bim-data
       env_file:
          - .env
 

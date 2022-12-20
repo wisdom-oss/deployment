@@ -147,6 +147,8 @@ services:
       command: server
       networks:
          - wisdom
+      environment:
+         AUTHENTIK_REDIS__HOST: redis
       env_file:
          - .env
       volumes:

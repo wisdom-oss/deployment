@@ -116,6 +116,8 @@ services:
       image: rabbitmq:3-alpine
       restart: always
       hostname: rabbitmq
+      networks:
+         - wisdom
       expose:
          - 5672
       env_file:
@@ -143,6 +145,8 @@ services:
       restart: unless-stopped
       hostname: authentik
       command: server
+      networks:
+         - wisdom
       env_file:
          - .env
       volumes:
@@ -156,6 +160,8 @@ services:
       restart: unless-stopped
       hostname: authentik
       command: worker
+      networks:
+         - wisdom
       environment:
          AUTHENTIK_REDIS__HOST: redis
       env_file:
@@ -215,6 +221,8 @@ services:
       image: wisdom-oss/service/water-usage-forcast-calculations:main
       stop_grace_period: 1m
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -230,6 +238,8 @@ services:
       build: https://github.com/wisdom-oss/service-geo-data-rest.git#main
       image: wisdom-oss/service/geodata:main
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -247,6 +257,8 @@ services:
       build: https://github.com/wisdom-oss/service-consumers.git#main
       image: wisdom-oss/service/consumers:main
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -263,6 +275,8 @@ services:
       build: https://github.com/wisdom-oss/service-water-rights.git#main
       image: wisdom-oss/service/water-rights:main
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -279,6 +293,8 @@ services:
       build: https://github.com/wisdom-oss/service-bim-data.git#main
       image: wisdom-oss/service/bim-data:main
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -287,6 +303,23 @@ services:
          - api-gateway
       environment:
          - SERVICE_PATH=/bim-data
+      env_file:
+         - .env
+
+   s-prophet-forecast:
+      build: https://github.com/wisdom-oss/service-prophet-forecast.git#main
+      image: wisdom-oss/service/prophet-forecast:main
+      restart: always
+      networks:
+         - wisdom
+      deploy:
+         mode: replicated
+         replicas: 5
+      depends_on:
+         - postgres
+         - api-gateway
+      environment:
+         - SERVICE_PATH=/prophet-forecast
       env_file:
          - .env
 

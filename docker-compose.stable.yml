@@ -116,6 +116,8 @@ services:
       image: rabbitmq:3-alpine
       restart: always
       hostname: rabbitmq
+      networks:
+         - wisdom
       expose:
          - 5672
       env_file:
@@ -143,6 +145,8 @@ services:
       restart: unless-stopped
       hostname: authentik
       command: server
+      networks:
+         - wisdom
       env_file:
          - .env
       volumes:
@@ -156,6 +160,8 @@ services:
       restart: unless-stopped
       hostname: authentik
       command: worker
+      networks:
+         - wisdom
       environment:
          AUTHENTIK_REDIS__HOST: redis
       env_file:
@@ -166,13 +172,14 @@ services:
          - ./media:/media
          - ./certs:/certs
          - ./custom-templates:/templates
+
    ##### WISdoM Containers #####
    # The container containing the frontend application
    frontend:
       build: 
          context: https://github.com/wisdom-oss/frontend-workspace.git#stable
          dockerfile: Dockerfile
-      image: wisdom-oss/frontend:main
+      image: wisdom-oss/frontend:stable
       hostname: frontend
       networks:
          - wisdom
@@ -188,7 +195,7 @@ services:
       build: 
          context: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#stable
          dockerfile: Dockerfile
-      image: wisdom-oss/service/water-usage-forcast-rest:main
+      image: wisdom-oss/service/water-usage-forcast-rest:stable
       stop_grace_period: 1m
       networks:
          - wisdom
@@ -211,9 +218,11 @@ services:
    # for the forecasts
    s-usage-forecast-calculations:
       build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#stable
-      image: wisdom-oss/service/water-usage-forcast-calculations:main
+      image: wisdom-oss/service/water-usage-forcast-calculations:stable
       stop_grace_period: 1m
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -227,8 +236,10 @@ services:
    # A microservice allowing access to the geospatial data stored in the postgres database
    s-geodata:
       build: https://github.com/wisdom-oss/service-geo-data-rest.git#stable
-      image: wisdom-oss/service/geodata:main
+      image: wisdom-oss/service/geodata:stable
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -244,8 +255,10 @@ services:
    # A microservce allowing access to the consumers stored in the postgres database
    s-consumers:
       build: https://github.com/wisdom-oss/service-consumers.git#stable
-      image: wisdom-oss/service/consumers:main
+      image: wisdom-oss/service/consumers:stable
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -260,8 +273,10 @@ services:
 
    s-water-rights:
       build: https://github.com/wisdom-oss/service-water-rights.git#stable
-      image: wisdom-oss/service/water-rights:main
+      image: wisdom-oss/service/water-rights:stable
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -276,8 +291,10 @@ services:
 
    s-bim-data:
       build: https://github.com/wisdom-oss/service-bim-data.git#stable
-      image: wisdom-oss/service/bim-data:main
+      image: wisdom-oss/service/bim-data:stable
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: 5
@@ -286,6 +303,23 @@ services:
          - api-gateway
       environment:
          - SERVICE_PATH=/bim-data
+      env_file:
+         - .env
+
+   s-prophet-forecast:
+      build: https://github.com/wisdom-oss/service-prophet-forecast.git#stable
+      image: wisdom-oss/service/prophet-forecast:stable
+      restart: always
+      networks:
+         - wisdom
+      deploy:
+         mode: replicated
+         replicas: 5
+      depends_on:
+         - postgres
+         - api-gateway
+      environment:
+         - SERVICE_PATH=/prophet-forecast
       env_file:
          - .env
 

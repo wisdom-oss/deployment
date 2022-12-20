@@ -6,11 +6,8 @@
 #version      : 0.1
 #usage        : bash update.sh
 #==================================================================================================
-
-#------------
-# VARIABLES
-#------------
-# Colors for colored output to the console
+ROOT_DIRECTORY="/opt/wisdom-oss"
+# colors
 nocolor='\033[0m'
 red='\033[0;31m'
 green='\033[0;32m'
@@ -30,20 +27,16 @@ white='\033[1;37m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-ROOT_DIRECTORY="/opt/wisdom-oss"
-# Mapping of passwords which shall be generated and in which file it may be needed
-password_blanks=("gen-pass-rabbitmq" "gen-postgres-pass" "gen-redis-pass")
-caddy_binding="binding"
-
 # Sudo Prepend if not started with sudo
 sudo=''
+branch=${BRANCH:=stable}
 
-# ======================================== START OF SCRIPT ========================================
-
-# Check if the current user is root or running with sudo
+#==================================================================================================
+# Checking for sudo privileges and prepending sudo if needed to every command
 if [[ $(id -u) -ne 0 ]]; then
-    sudo='sudo -E'
+  sudo='sudo -E'
 fi
+# Allow the script to run unattended (for usage in cron scripts)
 UNATTENDED=0
 while getopts "yh:" OPTION; do
   case "$OPTION" in
@@ -60,7 +53,6 @@ while getopts "yh:" OPTION; do
       ;;
   esac
 done
-
 echo -e "${lightcyan}Updater for the WISdoM OSS Project${nocolor}"
 
 echo -e "${orange}This script will update all Docker Images and configuration files to the latest
@@ -89,69 +81,27 @@ if [[ ${ORIGINAL_SUM} != ${NEW_SUM} ]]; then
 fi
 
 echo -e "${lightcyan}1.1 Stopping all currently running containers${nocolor}"
-$sudo docker compose down
+$sudo docker compose -f "docker-compose.$branch.yml" down
 echo -e "\n${green}✅ Stopped all currently running containers${nocolor}\n"
-
-
-echo -e "${lightcyan}1.3 Pulling the deployment Repo for new files${nocolor}"
-$sudo git reset --hard HEAD
+echo -e "${lightcyan}1.2 Pulling the deployment Repo for new files${nocolor}"
 $sudo git pull --force
 echo -e "\n${green}✅ Pulled from the deployment repository${nocolor}\n"
 
-# Create new passwords for possibly newly created services where needed
-for password_field in "${password_blanks[@]}"
+# Now get the names of the new environment variables
+readarry -t newEnvs < .env.new
+
+for newEnv in "${newEnvs[@]}"
   do
-    if [[ -f "./.tokens/.$password_field" ]]; then
-      echo -e "Found existing password for: ${password_field}"
-      find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat ./.tokens/.$password_field),g" {} \;
-    else
-      openssl rand -hex 16 | $sudo tee "./.tokens/.$password_field" > /dev/null
-      find . -type f -exec $sudo sed -i "s,<<$password_field>>,$(cat ./.tokens/.$password_field),g" {} \;
-    fi
+    echo -e "${yellow}Generating new value for ${newEnv}"
+    echo -e "${newEnv}=openssl rand -hex 16" | $sudo tee -a .env
 done
 
-if [[ -f "./.tokens/.caddy-binding" ]]; then
-  echo -e "Found existing Caddy Binding: $(cat ./.tokens/.caddy-binding)"
-  find . -type f -exec $sudo sed -i "s,<<binding>>,$(cat ./.tokens/.caddy-binding),g" {} \;
-else
-  echo -e "\n${lightpurple}HTTP Server Setup${normal}"
-  echo -e "You have two installation options for the system:"
-  echo -e "1) Installing the system for intranet usage (Recommended for testing purposes) [${green}Standard${normal}]"
-  echo -e "2) Installing the system for internet usage (Recommended for deployment purposes, ⚠️ ${yellow}HTTPS Only${normal} ⚠️ )\n"
-
-  while : ; do
-    read -rp "Please select a installation method [1]: " option
-
-    if [[ $option == 1 || $option = "" ]]
-    then
-      echo ":80" | $sudo tee "./.tokens/.caddy-binding"
-      find . -type f -exec $sudo sed -i "s,<<${caddy_binding}>>,$(cat ./.tokens/.caddy-binding),g" {} \;
-      break
-    elif [[ $option == 2 ]]; then
-      echo -e "Please enter the hostname unter which the dashboard shall be made available."
-      echo -e "⚠️ ${yellow}The entered hostname needs to match the address used in the browser exactly${normal}\n"
-      while : ; do
-        echo -en "Hostname: "
-        read -r hostname
-        echo -en "You entered \"${hostname}\". Is this correct? [Y/n]: "
-        read -r confirm
-        if [[ $confirm == [yY] || $confirm == [yY][eE][sS] || $confirm == "" ]] ; then
-          echo $hostname | $sudo tee "./.tokens/.caddy-binding"
-          find . -type f -exec $sudo sed -i "s,<<${caddy_binding}>>,$(cat ./.tokens/.caddy-binding),g" {} \;
-          break
-        fi
-      done
-    fi
-  done
-fi
-
-
 echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
-$sudo docker compose build --no-cache
+$sudo docker compose -f "docker-compose.$branch.yml" build --no-cache
 echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
 echo -e "${cyan}3 Restarting the containers${nocolor}\n"
-$sudo docker compose up -d
+$sudo docker compose -f "docker-compose.$branch.yml" up -d
 
 echo -e "${cyan}POST 1 - Cleaning the build environment${nocolor}\n"
 $sudo docker image prune -a -f

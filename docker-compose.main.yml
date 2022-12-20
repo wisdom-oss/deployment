@@ -162,7 +162,6 @@ services:
          - .env
       user: root
       volumes:
-         - ./custom-templates:/templates
          - /var/run/docker.sock:/var/run/docker.sock
          - ./media:/media
          - ./certs:/certs

@@ -29,15 +29,33 @@ authentik_binding="authentik-binding"
 
 #==================================================================================================
 # Checking for sudo privileges and prepending sudo if needed to every command
+cd /opt/wisdom-oss || exit
+
 if [[ $(id -u) -ne 0 ]]; then
   sudo='sudo -E'
 fi
-echo -e "${orange}Using ${bold}$branch${normal}${orange}version of the project${normal}"
+# Check if postgres was already configured
+docker volume inspect postgres_data &> /dev/null
+if [[ $? -eq 0 ]]; then
+  POSTGRES_EXSISTS=true
+else
+  POSTGRES_EXSISTS=false
+fi
+
+if [[ -e ".env" ]]; then
+  echo -e "${cyan}Setup was already executed${normal}"
+else
+echo -e "${orange}Using ${bold}$branch ${normal}${orange} version of the project${normal}"
 $sudo cp .env-template .env
 echo -e "${lightgreen}Generating secrects with openssl${normal}"
 for field in "${password_blanks[@]}"
 do
-    $sudo sed -i "s/<<$field>>/$(openssl rand -hex 16)/g" .env
+    if [[ $POSTGRES_EXSISTS == "true" && $field =~ "postgres" ]]; then
+      echo -e "${yellow}Skipping postgres initialisation since the volume already exists. Please set the
+      user and password in the .env file${normal}"
+    else
+      $sudo sed -i "s/<<$field>>/$(openssl rand -hex 16)/g" .env
+    fi
 done
 echo -e "\n${green}✅ Generated secrets${nocolor}\n"
 
@@ -106,18 +124,26 @@ then
   done
 fi
 done
+fi
 
 echo -e "${lightcyan}Preparing Docker Compose Deployment${nocolor}"
-$sudo docker volume create postgres_data
+if [ "$POSTGRES_EXSISTS" = false ]; then
+  echo -e "${lightcyan}Creating storage volume for postgres database${nocolor}"
+  $sudo docker volume create postgres_data
+fi
 $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env build
 $sudo docker network create wisdom
 $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env create
 
-echo -e "${purple}Preparing the Kong API Gateway${nocolor}"
-$sudo docker compose -f "docker-compose.$branch.yml" build api-gateway
-$sudo docker compose -f "docker-compose.$branch.yml" start postgres
+if [[ ! $POSTGRES_EXSISTS ]]; then
+echo -e "${purple}Building the Kong API Gateway${nocolor}"
+$sudo docker compose -f "docker-compose.$branch.yml" build api-gateway > /dev/null
+echo -e "${purple}Preparing the Kong API Gateway Database${nocolor}"
+$sudo docker compose -f "docker-compose.$branch.yml" start postgres > /dev/null
 sleep 15
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations bootstrap -v
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations up -v
+fi
+
 echo -e "${green}Starting WISdoM Platform${nocolor}"
 $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env up -d

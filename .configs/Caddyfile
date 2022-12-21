@@ -2,7 +2,7 @@
 	auto_https off
 }
 
-${CADDY_FRONTEND_BINDING} {
+{$CADDY_FRONTEND_BINDING} {
 	@frontend {
 		method GET
 		path *
@@ -43,6 +43,6 @@ ${CADDY_FRONTEND_BINDING} {
 	}
 }
 
-${CADDY_AUTHENTIK_BINDING} {
+{$CADDY_AUTHENTIK_BINDING} {
 	reverse_proxy authentik:9000
 }

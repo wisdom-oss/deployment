@@ -201,7 +201,7 @@ services:
          replicas: 5
       depends_on:
          - postgres
-         - kong-gateway
+         - api-gateway
       expose:
          - 5000
       environment:

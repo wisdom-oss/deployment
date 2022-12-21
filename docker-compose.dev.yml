@@ -198,7 +198,7 @@ services:
       restart: always
       deploy:
          mode: replicated
-         replicas: 5
+         replicas: ${COMPOSE_REPLICAS:-1}
       depends_on:
          - postgres
          - api-gateway
@@ -224,7 +224,7 @@ services:
       restart: always
       deploy:
          mode: replicated
-         replicas: 5
+         replicas: ${COMPOSE_REPLICAS:-1}
       depends_on:
          - postgres
          - api-gateway
@@ -247,7 +247,7 @@ services:
          - wisdom
       deploy:
          mode: replicated
-         replicas: 5
+         replicas: ${COMPOSE_REPLICAS:-1}
       depends_on:
          - rabbitmq
          - postgres
@@ -264,7 +264,7 @@ services:
          - wisdom
       deploy:
          mode: replicated
-         replicas: 5
+         replicas: ${COMPOSE_REPLICAS:-1}
       depends_on:
          - postgres
          - api-gateway
@@ -283,7 +283,7 @@ services:
          - wisdom
       deploy:
          mode: replicated
-         replicas: 5
+         replicas: ${COMPOSE_REPLICAS:-1}
       depends_on:
          - postgres
          - api-gateway
@@ -301,7 +301,7 @@ services:
          - wisdom
       deploy:
          mode: replicated
-         replicas: 5
+         replicas: ${COMPOSE_REPLICAS:-1}
       depends_on:
          - postgres
          - api-gateway
@@ -319,7 +319,7 @@ services:
          - wisdom
       deploy:
          mode: replicated
-         replicas: 5
+         replicas: ${COMPOSE_REPLICAS:-1}
       depends_on:
          - postgres
          - api-gateway
@@ -336,7 +336,7 @@ services:
          - wisdom
       deploy:
          mode: replicated
-         replicas: 5
+         replicas: ${COMPOSE_REPLICAS:-1}
       depends_on:
          - postgres
          - api-gateway

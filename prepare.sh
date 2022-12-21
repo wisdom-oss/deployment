@@ -135,7 +135,6 @@ $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env build
 $sudo docker network create wisdom
 $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env create
 
-if [ "$POSTGRES_EXSISTS" = false ]; then
 echo -e "${purple}Building the Kong API Gateway${nocolor}"
 $sudo docker compose -f "docker-compose.$branch.yml" build api-gateway > /dev/null
 echo -e "${purple}Preparing the Kong API Gateway Database${nocolor}"
@@ -143,7 +142,7 @@ $sudo docker compose -f "docker-compose.$branch.yml" start postgres > /dev/null
 sleep 15
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations bootstrap -v
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations up -v
-fi
+
 
 echo -e "${green}Starting WISdoM Platform${nocolor}"
 $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env up -d

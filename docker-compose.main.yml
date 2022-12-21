@@ -206,7 +206,7 @@ services:
          - 5000
       environment:
          - CONFIG_SERVICE_NAME=authorization-service
-         - CONFIG_DB_DSN=postgresql://postgres:${PG_PASS}@postgres:5432/wisdom
+         - CONFIG_DB_DSN=postgresql://${PG_USER}:${PG_PASS}@postgres:5432/wisdom
          - CONFIG_KONG_HOST=api-gateway
          - CONFIG_KONG_ADMIN_PORT=8001
          - CONFIG_KONG_SERVICE_SLUG=auth

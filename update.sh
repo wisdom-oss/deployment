@@ -97,7 +97,7 @@ for newEnv in "${newEnvs[@]}"
 done
 
 echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
-$sudo docker compose -f "docker-compose.$branch.yml" build --no-cache
+$sudo docker compose -f "docker-compose.$branch.yml" build
 echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
 echo -e "${cyan}3 Restarting the containers${nocolor}\n"

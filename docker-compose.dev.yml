@@ -179,7 +179,7 @@ services:
    # The container containing the frontend application
    frontend:
       build: 
-         context: https://github.com/wisdom-oss/frontend-workspace.git#dev
+         context: https://github.com/wisdom-oss/frontend-workspace.git#main
          dockerfile: Dockerfile
       image: wisdom-oss/frontend:dev
       hostname: frontend

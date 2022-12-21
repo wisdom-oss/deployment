@@ -135,7 +135,7 @@ $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env build
 $sudo docker network create wisdom
 $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env create
 
-if [[ ! $POSTGRES_EXSISTS ]]; then
+if [ "$POSTGRES_EXSISTS" = false ]; then
 echo -e "${purple}Building the Kong API Gateway${nocolor}"
 $sudo docker compose -f "docker-compose.$branch.yml" build api-gateway > /dev/null
 echo -e "${purple}Preparing the Kong API Gateway Database${nocolor}"

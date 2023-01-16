@@ -87,6 +87,23 @@ echo -e "${lightcyan}1.2 Pulling the deployment Repo for new files${nocolor}"
 $sudo git pull --force
 echo -e "\n${green}✅ Pulled from the deployment repository${nocolor}\n"
 
+if [[ -e ".env" ]]; then
+  echo -e "${cyan}Setup was already executed${normal}"
+else
+echo -e "${orange}Using ${bold}$branch ${normal}${orange} version of the project${normal}"
+$sudo cp .env-template .env
+echo -e "${lightgreen}Generating secrects with openssl${normal}"
+for field in "${password_blanks[@]}"
+do
+    if [[ $POSTGRES_EXSISTS == "true" && $field =~ "postgres" ]]; then
+      echo -e "${yellow}Skipping postgres initialisation since the volume already exists. Please set the
+      user and password in the .env file${normal}"
+    else
+      $sudo sed -i "s/<<$field>>/$(openssl rand -hex 16)/g" .env
+    fi
+done
+echo -e "\n${green}✅ Generated secrets${nocolor}\n"
+
 # Now get the names of the new environment variables
 readarry -t newEnvs < .env.new
 

@@ -143,6 +143,11 @@ sleep 15
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations bootstrap -v
 $sudo docker run --rm --network=wisdom --env-file .env wisdom-oss/api-gateway:latest kong migrations up -v
 
+read -rp "Preperations finished. Shall the WISdoM Platform be started? [y/N]:" option
 
+if [[ $option == "y" ]]; then
 echo -e "${green}Starting WISdoM Platform${nocolor}"
 $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env up -d
+else
+echo -e "To start the WISdoM Platform run: docker compose -f \"docker-compose.$branch.yml\" --env-file .env up -d"
+fi

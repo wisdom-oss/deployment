@@ -90,18 +90,19 @@ echo -e "\n${green}✅ Pulled from the deployment repository${nocolor}\n"
 if [[ -e ".env" ]]; then
   echo -e "${cyan}Setup was already executed${normal}"
 else
-echo -e "${orange}Using ${bold}$branch ${normal}${orange} version of the project${normal}"
-$sudo cp .env-template .env
-echo -e "${lightgreen}Generating secrects with openssl${normal}"
-for field in "${password_blanks[@]}"
-do
-    if [[ $POSTGRES_EXSISTS == "true" && $field =~ "postgres" ]]; then
-      echo -e "${yellow}Skipping postgres initialisation since the volume already exists. Please set the
-      user and password in the .env file${normal}"
-    else
-      $sudo sed -i "s/<<$field>>/$(openssl rand -hex 16)/g" .env
-    fi
-done
+  echo -e "${orange}Using ${bold}$branch ${normal}${orange} version of the project${normal}"
+  $sudo cp .env-template .env
+  echo -e "${lightgreen}Generating secrects with openssl${normal}"
+  for field in "${password_blanks[@]}"
+  do
+      if [[ $POSTGRES_EXSISTS == "true" && $field =~ "postgres" ]]; then
+        echo -e "${yellow}Skipping postgres initialisation since the volume already exists. Please set the
+        user and password in the .env file${normal}"
+      else
+        $sudo sed -i "s/<<$field>>/$(openssl rand -hex 16)/g" .env
+      fi
+  done
+fi
 echo -e "\n${green}✅ Generated secrets${nocolor}\n"
 
 # Now get the names of the new environment variables
@@ -130,5 +131,5 @@ if [[ $option == "y" ]]; then
 echo -e "${green}Starting WISdoM Platform${nocolor}"
 $sudo docker compose -f "docker-compose.$branch.yml" --env-file .env up -d
 else
-echo -e "To start the WISdoM Platform run: docker compose -f \"docker-compose.$branch.yml\" --env-file .env up -d"
+echo -e 'To start the WISdoM Platform run: docker compose -f "docker-compose.$branch.yml" --env-file .env up -d'
 fi

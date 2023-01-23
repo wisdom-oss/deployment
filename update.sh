@@ -187,6 +187,10 @@ echo -e "${cyan}2 Creating new Docker Images${nocolor}\n"
 $sudo docker compose -f "docker-compose.$branch.yml" build
 echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
 
+echo -e "${cyan}3 Creating new Docker Containers${nocolor}\n"
+$sudo docker compose -f "docker-compose.$branch.yml" --env-file .env create
+echo -e "\n${green}✅ Successfully created new docker images${nocolor}\n"
+
 echo -e "${purple}Updating the Kong API Gateway Database${nocolor}"
 $sudo docker compose -f "docker-compose.$branch.yml" start postgres > /dev/null
 sleep 15

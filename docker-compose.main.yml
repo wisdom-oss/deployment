@@ -196,6 +196,8 @@ services:
       image: wisdom-oss/authorization-service:dev-latest
       stop_grace_period: 1m
       restart: always
+      networks:
+         - wisdom
       deploy:
          mode: replicated
          replicas: ${COMPOSE_REPLICAS:-3}

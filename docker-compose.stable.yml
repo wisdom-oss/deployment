@@ -31,7 +31,7 @@ volumes:
 # Configuration files for the services
 configs:
    caddyfile:
-      file: ./.configs/Caddyfile
+      file: ./.configs/caddy/Caddyfile
 
 # Services for the WISdoM OSS
 services:

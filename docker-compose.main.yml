@@ -31,7 +31,7 @@ volumes:
 # Configuration files for the services
 configs:
    caddyfile:
-      file: ./.configs/Caddyfile
+      file: ./.configs/caddy/Caddyfile
 
 # Services for the WISdoM OSS
 services:
@@ -104,6 +104,7 @@ services:
          - KONG_PROXY_ERROR_LOG=/dev/stderr
          - KONG_ADMIN_ERROR_LOG=/dev/stderr
          - KONG_ADMIN_LISTEN=0.0.0.0:8001
+         - KONG_PLUGINS=default,wisdom-kong-internal-auth-plugin
       env_file:
          - .env
       expose:
@@ -192,8 +193,8 @@ services:
       logging: *logger_config
 
    s-auth-service:
-      build: https://github.com/wisdom-oss/authorization-service.git#dev
-      image: wisdom-oss/authorization-service:dev-latest
+      build: https://github.com/wisdom-oss/authorization-service.git#main
+      image: wisdom-oss/authorization-service:main
       stop_grace_period: 1m
       restart: always
       networks:

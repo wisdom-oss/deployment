@@ -1,6 +1,6 @@
 FROM kong
 USER root
-RUN luarocks install kong-plugin-oauth2-token-introspection-request
+RUN luarocks install wisdom-kong-internal-auth-plugin
 USER kong
 ENTRYPOINT ["/docker-entrypoint.sh"]
 EXPOSE 8000 8443 8001 8444

@@ -47,7 +47,7 @@ services:
     restart: always
     hostname: postgres
     volumes:
-      - ./.postgres:/var/lin/postgresql/data
+      - ./.data/postgres:/var/lib/postgresql/data
       - ./data/db-init/:/docker-entrypoint-initdb.d/
     networks:
       - wisdom
@@ -62,20 +62,23 @@ services:
   #The WISdoM Dashboard uses the Kong API Gateway to orgnaize the 
   # microservice instances in the backend. It is extended by the gateway service
   # watcher which scans the docker host for containers tagged by lables which
-  # are documented in the documentation for this repository
+  # are documented in the documentation for this repository. On every start the
+  # gateway will check if any migrations are necessary and will execute those
+  # before starting the gateway
   api-gateway:
     build: ./custom-images/kong/
     image: wisdom-oss/api-gateway:latest
     depends_on:
       postgres:
         condition: service_healthy
+    command: kong migrations bootstrap -v && kong migrations up -v && kong docker-start
     environment:
       - KONG_PG_PASSWORD_FILE=/run/secrets/postgres-password
       - KONG_PG_USER=postgres
       - KONG_PG_HOST=postgres
       - KONG_DATABASE=postgres
-      - KONG_PROXY_ACCESS_LOG=/dev/stdout
-      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ACCESS_LOG=/dev/null
+      - KONG_ADMIN_ACCESS_LOG=/dev/null
       - KONG_PROXY_ERROR_LOG=/dev/stderr
       - KONG_ADMIN_ERROR_LOG=/dev/stderr
       - KONG_ADMIN_LISTEN=0.0.0.0:8001

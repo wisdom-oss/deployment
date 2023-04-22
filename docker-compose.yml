@@ -22,8 +22,8 @@ services:
       - 80:80
       - 443:443
     environment:
-      - FRONTEND_BINDING=${CADDY_FRONTEND_BINDING}
-      - AUTHENTIK_BINDING=${CADDY_AUTHENTIK_BINDING}
+      - FRONTEND_BINDING=${CADDY_FRONTEND_BINDING:?required}
+      - AUTHENTIK_BINDING=${CADDY_AUTHENTIK_BINDING:?required}
     configs:
       - source: caddyfile
         target: /etc/caddy/Caddyfile
@@ -71,7 +71,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: kong migrations bootstrap -v && kong migrations up -v && kong docker-start
     environment:
       - KONG_PG_PASSWORD_FILE=/run/secrets/postgres-pass
       - KONG_PG_USER=postgres

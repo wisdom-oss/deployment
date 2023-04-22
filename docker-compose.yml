@@ -40,8 +40,8 @@ services:
     image: postgis/postgis:14-3.3-alpine
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "--dbname=wisdom"]
-      start_period: 20s
-      interval: 10s
+      start_period: 30s
+      interval: 20s
       retries: 5
       timeout: 5s
     restart: always
@@ -62,9 +62,7 @@ services:
   #The WISdoM Dashboard uses the Kong API Gateway to orgnaize the 
   # microservice instances in the backend. It is extended by the gateway service
   # watcher which scans the docker host for containers tagged by lables which
-  # are documented in the documentation for this repository. On every start the
-  # gateway will check if any migrations are necessary and will execute those
-  # before starting the gateway
+  # are documented in the documentation for this repository.
   api-gateway:
     build: ./custom-images/kong/
     image: wisdom-oss/api-gateway:latest

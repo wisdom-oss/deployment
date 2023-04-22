@@ -1,0 +1,26 @@
+# WISdoM Platform Compose File
+version: '3.9'
+networks:
+  wisdom:
+    driver: bridge
+    name: wisdom
+    driver_opts:
+      com.docker.network.bridge.name: br-wisdom
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.31.0.0/16
+
+configs:
+  caddyfile:
+    file: ./configs/caddy/Caddyfile
+  redis:
+    file: ./configs/redis/redis.conf
+  
+secrets:
+  postgres-pass:
+    file: ./.secrets/.pgpass
+  rabbitmq-pass:
+    file: ./.secrets/.rabbitmqpass
+  redis-pass:
+    file: ./.secrets/.redispass

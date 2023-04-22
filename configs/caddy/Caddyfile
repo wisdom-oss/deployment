@@ -1,0 +1,50 @@
+{
+	default_bind 0.0.0.0
+}
+
+{$AUTHENTIK_BINDING::9000} {
+	@cors_preflight method OPTIONS
+	handle @cors_preflight {
+		header Access-Control-Allow-Origin "*"
+		header Access-Control-Allow-Headers "*"
+		respond 200
+	}
+	reverse_proxy authentik:9000 {
+		header_up Host {host}
+		header_up X-Forwarded-Proto https
+		header_up X-Real-IP {remote_host}
+	}
+}
+
+{$FRONTEND_BINDING::80} {
+	@api {
+		method GET PUT POST PATCH DELETE
+		path /api/*
+	}
+
+	@static-files {
+		method GET
+		path /files/*
+	}
+
+	handle @api {
+		uri strip_prefix /api
+		reverse_proxy api-gateway:8000 {
+			header_up X-Real-IP {remote_host}
+			header_up -X-Authenticated-*
+			header_down -Server
+		}
+	}
+
+	handle @files {
+		uri strip_prefix /files
+		root * /files
+		file_server
+	}
+
+	handle {
+		reverse_proxy frontend:80 {
+			header_down -Server
+		}
+	}
+}

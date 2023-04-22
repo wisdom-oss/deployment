@@ -65,6 +65,7 @@ services:
   api-gateway:
     build: ./custom-images/kong/
     image: wisdom-oss/api-gateway:latest
+    hostname: api-gateway
     depends_on:
       postgres:
         condition: service_healthy
@@ -141,12 +142,13 @@ services:
       - ./.data/authentik/custom-templates:/templates
       - /var/run/docker.sock:/var/run/docker.sock
       - ./.data/authentik/certs:/certs
-
     networks:
       - wisdom
     secrets:
       - postgres-pass
       - authentik-secret-key
+
+  
 
 configs:
   caddyfile:

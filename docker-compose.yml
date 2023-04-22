@@ -1,8 +1,7 @@
 # WISdoM Platform Compose File
-version: '3.9'
+version: "3.9"
 
 services:
-
   # == Core services ==
   # The services listed here are always starting and required for the Dashboard
   # to function. Therefore, no profile is associated to them
@@ -32,7 +31,7 @@ services:
       options:
         max-size: 5m
         max-file: 3
-  
+
   # As database backend a PostgreSQL database is used with the PostGIS extension
   # enabled to allow the storage of geospatial data for the services. The data
   # is stored in a local mount to allow easier backup
@@ -59,7 +58,7 @@ services:
       - postgres-pass
     logging: *loggingConfig
 
-  #The WISdoM Dashboard uses the Kong API Gateway to orgnaize the 
+  #The WISdoM Dashboard uses the Kong API Gateway to orgnaize the
   # microservice instances in the backend. It is extended by the gateway service
   # watcher which scans the docker host for containers tagged by lables which
   # are documented in the documentation for this repository.
@@ -87,12 +86,74 @@ services:
       - postgres-pass
     logging: *loggingConfig
 
+  redis:
+    image: docker.io/library/redis:alpine
+    command: --save 60 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    networks:
+      - wisdom
+    volumes:
+      - ./.data/redis:/data
+
+  authentik-server:
+    image: ghcr.io/goauthentik/server:latest
+    restart: unless-stopped
+    command: server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/postgres-pass
+      AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik-secret-key
+    volumes:
+      - ./.data/authentik/media:/media
+      - ./.data/authentik/custom-templates:/templates
+    networks:
+      - wisdom
+    secrets:
+      - postgres-pass
+      - authentik-secret-key
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:latest
+    restart: unless-stopped
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: postgres
+      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/postgres-pass
+      AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik-secret-key
+    user: root
+    volumes:
+      - ./.data/authentik/media:/media
+      - ./.data/authentik/custom-templates:/templates
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./.data/authentik/certs:/certs
+
+    networks:
+      - wisdom
+    secrets:
+      - postgres-pass
+      - authentik-secret-key
+
 configs:
   caddyfile:
     file: ./configs/caddy/Caddyfile
   redis:
     file: ./configs/redis/redis.conf
-  
+
 secrets:
   postgres-pass:
     file: ./.secrets/.pgpass
@@ -100,6 +161,8 @@ secrets:
     file: ./.secrets/.rabbitmqpass
   redis-pass:
     file: ./.secrets/.redispass
+  authentik-secret-key:
+    file: ./.secrets/.authentik-secret-key
 
 networks:
   wisdom:

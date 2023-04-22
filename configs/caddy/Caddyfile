@@ -2,7 +2,7 @@
 	default_bind 0.0.0.0
 }
 
-{$AUTHENTIK_BINDING::9000} {
+{$AUTHENTIK_BINDING} {
 	@cors_preflight method OPTIONS
 	handle @cors_preflight {
 		header Access-Control-Allow-Origin "*"
@@ -16,7 +16,7 @@
 	}
 }
 
-{$FRONTEND_BINDING::80} {
+{$FRONTEND_BINDING} {
 	@api {
 		method GET PUT POST PATCH DELETE
 		path /api/*
@@ -36,7 +36,7 @@
 		}
 	}
 
-	handle @files {
+	handle @static-files {
 		uri strip_prefix /files
 		root * /files
 		file_server

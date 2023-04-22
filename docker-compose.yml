@@ -148,6 +148,20 @@ services:
       - postgres-pass
       - authentik-secret-key
 
+
+  frontend:
+    build:
+        context: https://github.com/wisdom-oss/frontend-workspace.git#main
+        dockerfile: Dockerfile
+    image: wisdom-oss/frontend:main
+    hostname: frontend
+    networks:
+        - wisdom
+    restart: always
+    # Expose the port 80 to other services
+    expose:
+        - 80
+    logging: *loggingConfig
   
 
 configs:

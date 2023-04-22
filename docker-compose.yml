@@ -1,15 +1,91 @@
 # WISdoM Platform Compose File
 version: '3.9'
-networks:
-  wisdom:
-    driver: bridge
-    name: wisdom
-    driver_opts:
-      com.docker.network.bridge.name: br-wisdom
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.31.0.0/16
+
+services:
+
+  # == Core services ==
+  # The services listed here are always starting and required for the Dashboard
+  # to function. Therefore, no profile is associated to them
+
+  # HTTP Entrypoint
+  # The http entrypoint uses caddy as the http server and works as a reverse
+  # proxy for the different parts of the frontend and backend. It mainly routes
+  # the traffic from a external user either to the authentik server running as
+  # authorization software, the frontend or the api gateway for requests to
+  # microservices
+  http-entrypoint:
+    image: caddy:alpine
+    restart: always
+    networks:
+      - wisdom
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - FRONTEND_BINDING=${CADDY_FRONTEND_BINDING}
+      - AUTHENTIK_BINDING=${CADDY_AUTHENTIK_BINDING}
+    configs:
+      - source: caddyfile
+        target: /etc/caddy/Caddyfile
+    logging: &loggingConfig
+      driver: "json-file"
+      options:
+        max-size: 5m
+        max-file: 3
+  
+  # As database backend a PostgreSQL database is used with the PostGIS extension
+  # enabled to allow the storage of geospatial data for the services. The data
+  # is stored in a local mount to allow easier backup
+  postgres:
+    image: postgis/postgis:14-3.3-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "--dbname=wisdom"]
+      start_period: 20s
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    restart: always
+    hostname: postgres
+    volumes:
+      - ./.postgres:/var/lin/postgresql/data
+      - ./data/db-init/:/docker-entrypoint-initdb.d/
+    networks:
+      - wisdom
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-pass
+      - POSTGRES_DB=wisdom
+      - PGUSER=postgres
+    secrets:
+      - postgres-pass
+    logging: *loggingConfig
+
+  #The WISdoM Dashboard uses the Kong API Gateway to orgnaize the 
+  # microservice instances in the backend. It is extended by the gateway service
+  # watcher which scans the docker host for containers tagged by lables which
+  # are documented in the documentation for this repository
+  api-gateway:
+    build: ./custom-images/kong/
+    image: wisdom-oss/api-gateway:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - KONG_PG_PASSWORD_FILE=/run/secrets/postgres-password
+      - KONG_PG_USER=postgres
+      - KONG_PG_HOST=postgres
+      - KONG_DATABASE=postgres
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+    networks:
+      - wisdom
+    labels:
+      - wisdom-oss.isGateway=true
+    secrets:
+      - postgres-password
+    logging: *loggingConfig
 
 configs:
   caddyfile:
@@ -24,3 +100,14 @@ secrets:
     file: ./.secrets/.rabbitmqpass
   redis-pass:
     file: ./.secrets/.redispass
+
+networks:
+  wisdom:
+    driver: bridge
+    name: wisdom
+    driver_opts:
+      com.docker.network.bridge.name: br-wisdom
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.31.0.0/16

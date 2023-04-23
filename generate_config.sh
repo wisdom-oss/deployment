@@ -66,8 +66,6 @@ echo "Which branch of WISdoM do you want to use?"
   done
 
   git fetch --all
-  git checkout -f $git_branch
-
   if [ ! -z "${WISDOM_BRANCH}" ]; then
   git_branch=${WISDOM_BRANCH}
 fi
@@ -76,7 +74,7 @@ AMQP_PASS=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c 28)
 PG_PASS=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c 28)
 AUTHENTIK_SECRET_KEY=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c 28)
 
-mkdir .secrets
+mkdir -p .secrets
 echo -e "${PG_PASS}" > ./.secrets/.pgpass
 echo -e "${AMQP_PASS}" > ./.secrets/.amqppass
 echo -e "${AUTHENTIK_SECRET_KEY}" > ./.secrets/.authentik-secret-key
@@ -197,6 +195,13 @@ PG_PASS=${PG_PASS}
 # ------------------------------
 # General Service Configuration
 # ------------------------------
+
+# DEFAULT_BRANCH
+# Required: yes
+# Default value: main
+#
+# The git branch on which all services and the frontend is based on
+DEFAULT_BRANCH=${WISDOM_BRANCH}
 
 # COMPOSE_SERVICE_REPLICAS
 # Required: no

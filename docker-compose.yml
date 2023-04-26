@@ -71,8 +71,8 @@ services:
         condition: service_healthy
     environment:
       - KONG_PG_PASSWORD_FILE=/run/secrets/postgres-pass
-      - KONG_PG_USER=postgres
-      - KONG_PG_HOST=postgres
+      - KONG_PG_USER=${PG_USER:-postgres}
+      - KONG_PG_HOST=${PG_HOST:-postgres}
       - KONG_DATABASE=postgres
       - KONG_PROXY_ACCESS_LOG=/dev/null
       - KONG_ADMIN_ACCESS_LOG=/dev/null
@@ -111,14 +111,16 @@ services:
         condition: service_healthy
     environment:
       AUTHENTIK_REDIS__HOST: redis
-      AUTHENTIK_POSTGRESQL__HOST: postgres
-      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__HOST: ${PG_HOST:-postgres}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-postgres}
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/postgres-pass
       AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik-secret-key
     volumes:
       - ./.data/authentik/media:/media
       - ./.data/authentik/custom-templates:/templates
+    expose:
+      - 9000
     networks:
       - wisdom
     secrets:
@@ -131,8 +133,8 @@ services:
     command: worker
     environment:
       AUTHENTIK_REDIS__HOST: redis
-      AUTHENTIK_POSTGRESQL__HOST: postgres
-      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__HOST: ${PG_HOST:-postgres}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-postgres}
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/postgres-pass
       AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik-secret-key
@@ -148,10 +150,22 @@ services:
       - postgres-pass
       - authentik-secret-key
 
+  rabbitmq:
+    image: rabbitmq:3-alpine
+    hostname: rabbitmq
+    networks:
+      - wisdom
+    restart: always
+    expose:
+      - 5672
+    logging: *loggingConfig
+    environment:
+      - RABBITMQ_DEFAULT_USER=${AMQP_USER:wisdom}
+      - RABBITMQ_DEFAULT_PASS=${AMQP_PASSWORD:?amqp password required}
 
   frontend:
     build:
-        context: https://github.com/wisdom-oss/frontend-workspace.git#main
+        context: https://github.com/wisdom-oss/frontend-workspace.git#${FRONTEND_BRANCH:-main}
         dockerfile: Dockerfile
     image: wisdom-oss/frontend:main
     hostname: frontend
@@ -162,7 +176,125 @@ services:
     expose:
         - 80
     logging: *loggingConfig
-  
+
+  usage-forecasts-rest:
+    build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#${SERVICE_BRANCH:-main}
+    image: wisdom-oss/usage-forecasts-rest:${SERVICE_BRANCH:-main}-latest
+    networks:
+      - wisdom
+    restart: always
+    expose:
+      - 8000
+    logging: *loggingConfig
+    deploy:
+      mode: replicated
+      replicas: ${COMPOSE_SERVICE_REPLICAS:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PG_HOST=${PG_HOST:-postgres}
+      - PG_USER=${PG_USER:-postgres}
+      - PG_PASS_FILE=/run/secrets/postgres-pass
+      - PG_PORT=${PG_PORT:-5432}
+      - AMQP_HOST=${AMQP_HOST:-rabbitmq}
+      - AMQP_USER=${AMQP_USER:-wisdom}
+      - AMQP_PASS_FILE=/run/secrets/amqp-pass
+      - AMQP_EXCHANGE=${SERVICE__WATER_USAGE_FORECASTS__AMQP_EXCHANGE:-water-usage-forecasts}
+      - CALCULATION_MODULE_ROUTING_KEY=${SERVICE__WATER_USAGE_FORECASTS__AMQP_ROUTING_KEY:-requests}
+
+  usage-forecasts-calculations:
+    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#${SERVICE_BRANCH:-main}
+    image: wisdom-oss/usage-forecasts-rest-calculations:${SERVICE_BRANCH:-main}-latest
+    networks:
+      - wisdom
+    restart: always
+    logging: *loggingConfig
+    deploy:
+      mode: replicated
+      replicas: ${COMPOSE_SERVICE_REPLICAS:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - CONFIG_DB_DSN=postgresql://${PG_USER:-postgres}:${PG_PASS:?password is required}@${PG_HOST:-postgres}:${PG_PORT:-5432}/wisdom
+      - CONFIG_AMQP_DSN=amqp://${AMQP_USER:-wisdom}:${AMQP_PASSWORD:?password is required}@${AMQP_HOST:-rabbitmq}/%2
+
+  geodata:
+    build: https://github.com/wisdom-oss/service-geo-data-rest.git#${SERVICE_BRANCH:-main}
+    image: wisdom-oss/geodata-rest:${SERVICE_BRANCH:-main}-latest
+    restart: always
+    networks:
+      - wisdom
+    deploy:
+      mode: replicated
+      replicas: ${COMPOSE_REPLICAS:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PG_HOST=${PG_HOST:-postgres}
+      - PG_USER=${PG_USER:-postgres}
+      - PG_PASS_FILE=/run/secrets/postgres-pass
+      - PG_PORT=${PG_PORT:-5432}
+    logging: *logger_config
+
+  consumers:
+    build: https://github.com/wisdom-oss/service-consumers.git#${SERVICE_BRANCH:-main}
+    image: wisdom-oss/consumers-rest:${SERVICE_BRANCH:-main}-latest
+    restart: always
+    networks:
+      - wisdom
+    deploy:
+      mode: replicated
+      replicas: ${COMPOSE_REPLICAS:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PG_HOST=${PG_HOST:-postgres}
+      - PG_USER=${PG_USER:-postgres}
+      - PG_PASS_FILE=/run/secrets/postgres-pass
+      - PG_PORT=${PG_PORT:-5432}
+    logging: *logger_config
+
+  water-rights:
+    build: https://github.com/wisdom-oss/service-water-rights.git#${SERVICE_BRANCH:-main}
+    image: wisdom-oss/water-rights-rest:${SERVICE_BRANCH:-main}-latest
+    restart: always
+    networks:
+      - wisdom
+    deploy:
+      mode: replicated
+      replicas: ${COMPOSE_REPLICAS:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PG_HOST=${PG_HOST:-postgres}
+      - PG_USER=${PG_USER:-postgres}
+      - PG_PASS_FILE=/run/secrets/postgres-pass
+      - PG_PORT=${PG_PORT:-5432}
+    logging: *logger_config
+
+  prophet-forecast:
+    build: https://github.com/wisdom-oss/service-prophet-forecast.git#${SERVICE_BRANCH:-main}
+    image: wisdom-oss/prophet-forecast-rest:${SERVICE_BRANCH:-main}-latest
+    restart: always
+    networks:
+      - wisdom
+    deploy:
+      mode: replicated
+      replicas: ${COMPOSE_REPLICAS:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - PG_HOST=${PG_HOST:-postgres}
+      - PG_USER=${PG_USER:-postgres}
+      - PG_PASS_FILE=/run/secrets/postgres-pass
+      - PG_PORT=${PG_PORT:-5432}
+    logging: *logger_config
 
 configs:
   caddyfile:
@@ -173,7 +305,7 @@ configs:
 secrets:
   postgres-pass:
     file: ./.secrets/.pgpass
-  rabbitmq-pass:
+  amqp-pass:
     file: ./.secrets/.rabbitmqpass
   redis-pass:
     file: ./.secrets/.redispass

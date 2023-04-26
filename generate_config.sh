@@ -42,33 +42,47 @@ while [ -z "${WISDOM_TZ}" ]; do
   fi
 done
 
-echo "Which branch of WISdoM do you want to use?"
-  echo ""
-  echo "Available Branches:"
-  echo "- stable branch (production-ready updates) | less features [1]"
-  echo "- main branch (stable updates) | default, recommended [2]"
-  echo "- dev branch (unstable updates, testing) | not-production ready [3]"
-  sleep 1
+echo "Which branch of WISdoM serivces do you want to use?"
+echo ""
+echo "Available Branches:"
+echo "- stable branch (production-ready updates) | less features [1]"
+echo "- main branch (stable updates) | default, recommended [2]"
+echo "- dev branch (unstable updates, testing) | not-production ready [3]"
+sleep 1
 
-  while [ -z "${WISDOM_BRANCH}" ]; do
-    read -r -p  "Choose the Branch with it´s number [1/2/3] " branch
-    case $branch in
-      [3])
-        WISDOM_BRANCH="dev"
-        ;;
-      [1])
-        WISDOM_BRANCH="stable"
-        ;;
-      *)
-        WISDOM_BRANCH="main"
+while [ -z "${SERVICE_BRANCH}" ]; do
+  read -r -p  "Choose the Branch with it´s number [1/2/3] " branch
+  case $branch in
+    [3])
+      SERVICE_BRANCH="dev"
       ;;
-    esac
-  done
+    [1])
+      SERVICE_BRANCH="stable"
+      ;;
+    *)
+      SERVICE_BRANCH="main"
+    ;;
+  esac
+done
 
-  git fetch --all
-  if [ ! -z "${WISDOM_BRANCH}" ]; then
-  git_branch=${WISDOM_BRANCH}
-fi
+echo "Which branch of the WISdoM frontend do you want to use?"
+echo ""
+echo "Available Branches:"
+echo "- stable branch (production-ready updates) | less features [1]"
+echo "- main branch (stable updates) | default, recommended [2]"
+sleep 1
+
+while [ -z "${FRONTEND_BRANCH}" ]; do
+  read -r -p  "Choose the Branch with it´s number [1/2] " branch
+  case $branch in
+    [1])
+      FRONTEND_BRANCH="stable"
+      ;;
+    *)
+      FRONTEND_BRANCH="main"
+    ;;
+  esac
+done
 
 AMQP_PASS=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c 28)
 PG_PASS=$(LC_ALL=C </dev/urandom tr -dc A-Za-z0-9 2> /dev/null | head -c 28)
@@ -196,12 +210,19 @@ PG_PASS=${PG_PASS}
 # General Service Configuration
 # ------------------------------
 
-# DEFAULT_BRANCH
+# SERVICE_BRANCH
 # Required: yes
 # Default value: main
 #
-# The git branch on which all services and the frontend is based on
-DEFAULT_BRANCH=${WISDOM_BRANCH}
+# The git branch on which is used for the services
+SERVICE_BRANCH=${SERVICE_BRANCH}
+
+# FRONTEND_BRANCH
+# Required: yes
+# Default value: main
+#
+# The git branch on which is used for the services
+FRONTEND_BRANCH=${FRONTEND_BRANCH}
 
 # COMPOSE_SERVICE_REPLICAS
 # Required: no

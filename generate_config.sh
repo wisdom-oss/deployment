@@ -108,7 +108,7 @@ cat << EOF > wisdom.conf
 # This setting sets the binding used to access the fronted and api. Only giving
 # a port like ":80" is allowed and will bind port 80 and disable the automatic
 # HTTPS deployment
-CADDY_FRONTEND_BINDING=${CADDY_FRONTEND_BINDING}
+CADDY_FRONTEND_BINDING="${CADDY_FRONTEND_BINDING}"
 
 # CADDY_AUTHENTIK_BINDING
 # Required: yes
@@ -118,7 +118,7 @@ CADDY_FRONTEND_BINDING=${CADDY_FRONTEND_BINDING}
 # HTTPS deployment. If this value is only set to a port you may need to add a
 # override to the "http-entrypoint" service in docker-compose.override.yml to 
 # add the port to the port shares
-CADDY_AUTHENTIK_BINDING=${CADDY_AUTHENTIK_BINDING}
+CADDY_AUTHENTIK_BINDING="${CADDY_AUTHENTIK_BINDING}"
 
 # ------------------------------
 # AMQP Configuration

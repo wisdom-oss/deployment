@@ -237,7 +237,7 @@ services:
       - PG_USER=${PG_USER:-postgres}
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
-    logging: *logger_config
+    logging: *loggingConfig
 
   consumers:
     build: https://github.com/wisdom-oss/service-consumers.git#${SERVICE_BRANCH:-main}
@@ -256,7 +256,7 @@ services:
       - PG_USER=${PG_USER:-postgres}
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
-    logging: *logger_config
+    logging: *loggingConfig
 
   water-rights:
     build: https://github.com/wisdom-oss/service-water-rights.git#${SERVICE_BRANCH:-main}
@@ -275,7 +275,7 @@ services:
       - PG_USER=${PG_USER:-postgres}
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
-    logging: *logger_config
+    logging: *loggingConfig
 
   prophet-forecast:
     build: https://github.com/wisdom-oss/service-prophet-forecast.git#${SERVICE_BRANCH:-main}
@@ -294,7 +294,7 @@ services:
       - PG_USER=${PG_USER:-postgres}
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
-    logging: *logger_config
+    logging: *loggingConfig
 
 configs:
   caddyfile:

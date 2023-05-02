@@ -6,6 +6,11 @@ services:
   # The services listed here are always starting and required for the Dashboard
   # to function. Therefore, no profile is associated to them
 
+  # Service Watcher
+  # The service watcher regularly scans the docker host for containers running
+  # on it which are labelled according to the watchers documentation and adds
+  # them to the api gateway
+
   # HTTP Entrypoint
   # The http entrypoint uses caddy as the http server and works as a reverse
   # proxy for the different parts of the frontend and backend. It mainly routes
@@ -160,7 +165,7 @@ services:
       - 5672
     logging: *loggingConfig
     environment:
-      - RABBITMQ_DEFAULT_USER=${AMQP_USER:wisdom}
+      - RABBITMQ_DEFAULT_USER=${AMQP_USER:-wisdom}
       - RABBITMQ_DEFAULT_PASS=${AMQP_PASSWORD:?amqp password required}
 
   frontend:
@@ -202,6 +207,10 @@ services:
       - AMQP_PASS_FILE=/run/secrets/amqp-pass
       - AMQP_EXCHANGE=${SERVICE__WATER_USAGE_FORECASTS__AMQP_EXCHANGE:-water-usage-forecasts}
       - CALCULATION_MODULE_ROUTING_KEY=${SERVICE__WATER_USAGE_FORECASTS__AMQP_ROUTING_KEY:-requests}
+    labels:
+      - wisdom-oss.service.name=water-usage-forecasts
+      - wisdom-oss.service.path=/water-usage-forecasts
+      - wisdom-oss.service.upstream-name=water-usage-forecasts
 
   usage-forecasts-calculations:
     build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#${SERVICE_BRANCH:-main}
@@ -219,6 +228,7 @@ services:
     environment:
       - CONFIG_DB_DSN=postgresql://${PG_USER:-postgres}:${PG_PASS:?password is required}@${PG_HOST:-postgres}:${PG_PORT:-5432}/wisdom
       - CONFIG_AMQP_DSN=amqp://${AMQP_USER:-wisdom}:${AMQP_PASSWORD:?password is required}@${AMQP_HOST:-rabbitmq}/%2
+    
 
   geodata:
     build: https://github.com/wisdom-oss/service-geo-data-rest.git#${SERVICE_BRANCH:-main}
@@ -238,6 +248,10 @@ services:
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
     logging: *loggingConfig
+    labels:
+      - wisdom-oss.service.name=water-usage-forecasts
+      - wisdom-oss.service.path=/water-usage-forecasts
+      - wisdom-oss.service.upstream-name=water-usage-forecasts
 
   consumers:
     build: https://github.com/wisdom-oss/service-consumers.git#${SERVICE_BRANCH:-main}
@@ -257,6 +271,10 @@ services:
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
     logging: *loggingConfig
+    labels:
+      - wisdom-oss.service.name=consumers
+      - wisdom-oss.service.path=/consumers
+      - wisdom-oss.service.upstream-name=consumers
 
   water-rights:
     build: https://github.com/wisdom-oss/service-water-rights.git#${SERVICE_BRANCH:-main}
@@ -276,6 +294,10 @@ services:
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
     logging: *loggingConfig
+    labels:
+      - wisdom-oss.service.name=water-rights
+      - wisdom-oss.service.path=/water-rights
+      - wisdom-oss.service.upstream-name=water-rights
 
   prophet-forecast:
     build: https://github.com/wisdom-oss/service-prophet-forecast.git#${SERVICE_BRANCH:-main}
@@ -295,6 +317,10 @@ services:
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
     logging: *loggingConfig
+    labels:
+      - wisdom-oss.service.name=prophet-usage-forecast
+      - wisdom-oss.service.path=/prophet
+      - wisdom-oss.service.upstream-name=prophet-usage-forecast
 
 configs:
   caddyfile:

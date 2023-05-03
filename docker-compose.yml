@@ -57,6 +57,7 @@ services:
       - wisdom
     environment:
       - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-pass
+      - POSTGRES_USER=${PG_USER:-postgres}
       - POSTGRES_DB=wisdom
       - PGUSER=postgres
     secrets:

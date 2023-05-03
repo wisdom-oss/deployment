@@ -48,7 +48,6 @@ privileges on the machine!
     ```bash
     ./generate_config.sh
     ```
-    Remember the passwords printed out to the console
 4. If needed update the configuration file
     ```bash
     nano wisdom.conf

@@ -57,6 +57,11 @@ privileges on the machine!
     ```bash
     docker compose build
     ```
+6. Prepare API Gateway Database
+    ```bash
+    docker compose run api-gateway kong migrations bootstrap
+    ```
+
 6. Start up the containers
     ```bash
     docker compose up -d

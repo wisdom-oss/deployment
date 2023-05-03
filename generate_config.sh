@@ -239,14 +239,14 @@ FRONTEND_BRANCH=${FRONTEND_BRANCH}
 # Required: yes
 # 
 # The Authority for the Open ID Connect client used to authenticate users
-# FRONTEND_OPEN_ID_CONNECT_AUTHORITY=
+#FRONTEND_OPEN_ID_CONNECT_AUTHORITY=
 
 # FRONTEND_OPEN_ID_CONNECT_CLIENT_ID
 # Required: yes
 #
 # The Client ID for the Open ID Connect client used in the frontend to 
 # authenticate users
-# FRONTEND_OPEN_ID_CONNECT_CLIENT_ID=
+#FRONTEND_OPEN_ID_CONNECT_CLIENT_ID=
 
 # ------------------------------
 # Water Usage Service Configuration

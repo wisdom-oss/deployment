@@ -71,7 +71,68 @@ Now the platform ist deployed on your machine and ready to be configured.
 
 ### Configure the platform
 #### Authentik
+##### Administrative User
+Since authentik will not be preconfigured with a password and user you need
+to create the password for the initial user `akadmin`. To achive this, you need
+to open the authentik UI via the binding you entered during the configuration
+generation on the following path: `/if/flow/initial-setup/`. You may now set
+the administrators E-Mail Address and password. Make sure that the password is
+secure!
 
+##### Change the OpenID `profile` scope
+Due to the authentication measures taken by the platform you need to change
+authentik's implementation of the `profile` OpenID Connect scope.
+
+1. Open the Authentik Admin UI (`/if/admin/`)
+2. Navigate to the _Property Mappings_ which are located under the _Customization_
+    entry in the sidebar
+3. Enable the display of the managed mappings by flipping the switch labeled
+    _Hide managed mappings_
+4. Edit the mapping named `authentik default OAuth Mapping: OpenID 'profile'`
+5. Replace the contents of the mapping with the following code:
+    ```python
+    # This function will help resolving the parents of a group
+    def resolve_parents(group, parentList):
+        parentList.append(group)
+        if group.parent is not None:
+            parentList.append(group.parent)
+            resolve_parents(group.parent, parentList)
+    
+    # Now get all groups the user is directly assigned to
+    userGroups = [g.name for g in user.ak_groups.all()]
+
+    # Now resolve all parents of a group if the group has a parent
+    for group in user.ak_groups.all():
+        if group.parent is not None:
+            parents = []
+            resolve_parents(group, parents)
+            for parent in parents:
+                userGroups.append(parent.name)
+
+    return {
+        # Because authentik only saves the user's full name, and has no concept of first and last names,
+        # the full name is used as given name.
+        # You can override this behaviour in custom mappings, i.e. `request.user.name.split(" ")`
+        "name": request.user.name,
+        "given_name": request.user.name,
+        "preferred_username": request.user.username,
+        "nickname": request.user.username,
+        # groups is not part of the official userinfo schema, but is a quasi-standard
+        "groups": list(set(userGroups)),
+    }
+    ```
+6. Save the edited mapping
+
+##### Creating a OpenID Connect Provider for the frontend
+1. Open the administrative UI of your authentik installation
+    `/if/admin/`
+
+2. Now navigate to the Providers using the left sidebar `Applications/Providers`
+
+3. Now Create a new `OAuth2/OpenID` provider with the client type set to 
+    `public`.
+
+4. Now set the `Client ID` in the frontend as described in the aproppriate documentation
 
 ## FAQ
 ### Why authentik as authorization server

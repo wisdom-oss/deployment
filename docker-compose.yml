@@ -228,7 +228,7 @@ services:
         condition: service_healthy
     environment:
       - CONFIG_DB_DSN=postgresql://${PG_USER:-postgres}:${PG_PASS:?password is required}@${PG_HOST:-postgres}:${PG_PORT:-5432}/wisdom
-      - CONFIG_AMQP_DSN=amqp://${AMQP_USER:-wisdom}:${AMQP_PASSWORD:?password is required}@${AMQP_HOST:-rabbitmq}/%2
+      - CONFIG_AMQP_DSN=amqp://${AMQP_USER:-wisdom}:${AMQP_PASSWORD:?password is required}@${AMQP_HOST:-rabbitmq}/%2F
     
 
   geodata:

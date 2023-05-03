@@ -131,7 +131,9 @@ authentik's implementation of the `profile` OpenID Connect scope.
 3. Now Create a new `OAuth2/OpenID` provider with the client type set to 
     `public`.
 
-4. Now set the `Client ID` in the frontend as described in the aproppriate documentation
+4. Now set the `Client ID` in the `wisdom.conf` file together with the 
+    OpenID Configuration URL displayed in the Provider Details
+
 
 ## FAQ
 ### Why authentik as authorization server

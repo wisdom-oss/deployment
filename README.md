@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/wisdom-oss/brand/main/silhoutte.svg" height=100px>
+<img src="https://raw.githubusercontent.com/wisdom-oss/brand/main/silhoutte.svg" height="100px">
 </p>
 
 # WISdoM OSS Deployment

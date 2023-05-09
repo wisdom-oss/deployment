@@ -249,6 +249,7 @@ services:
       - AMQP_EXCHANGE=${SERVICE__WATER_USAGE_FORECASTS__AMQP_EXCHANGE:-water-usage-forecasts}
       - CALCULATION_MODULE_ROUTING_KEY=${SERVICE__WATER_USAGE_FORECASTS__AMQP_ROUTING_KEY:-requests}
     labels:
+      - wisdom-oss.isService=true
       - wisdom-oss.service.name=water-usage-forecasts
       - wisdom-oss.service.path=/water-usage-forecasts
       - wisdom-oss.service.upstream-name=water-usage-forecasts
@@ -295,6 +296,7 @@ services:
     secrets:
       - postgres-pass
     labels:
+      - wisdom-oss.isService=true
       - wisdom-oss.service.name=water-usage-forecasts
       - wisdom-oss.service.path=/water-usage-forecasts
       - wisdom-oss.service.upstream-name=water-usage-forecasts
@@ -320,6 +322,7 @@ services:
       - PG_PORT=${PG_PORT:-5432}
     logging: *loggingConfig
     labels:
+      - wisdom-oss.isService=true
       - wisdom-oss.service.name=consumers
       - wisdom-oss.service.path=/consumers
       - wisdom-oss.service.upstream-name=consumers
@@ -345,6 +348,7 @@ services:
     secrets:
       - postgres-pass
     labels:
+      - wisdom-oss.isService=true
       - wisdom-oss.service.name=water-rights
       - wisdom-oss.service.path=/water-rights
       - wisdom-oss.service.upstream-name=water-rights
@@ -370,6 +374,7 @@ services:
     secrets:
       - postgres-pass
     labels:
+      - wisdom-oss.isService=true
       - wisdom-oss.service.name=prophet-usage-forecast
       - wisdom-oss.service.path=/prophet
       - wisdom-oss.service.upstream-name=prophet-usage-forecast

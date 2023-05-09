@@ -1,6 +1,5 @@
 # WISdoM Platform Compose File
 version: "3.9"
-name: "wisdom"
 services:
   # == Core services ==
   # The services listed here are always starting and required for the Dashboard

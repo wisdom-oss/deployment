@@ -168,6 +168,9 @@ services:
     image: ghcr.io/goauthentik/server:latest
     restart: unless-stopped
     command: worker
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       AUTHENTIK_REDIS__HOST: redis
       AUTHENTIK_POSTGRESQL__HOST: ${PG_HOST:-postgres}

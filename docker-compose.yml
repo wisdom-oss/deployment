@@ -134,6 +134,36 @@ services:
       - postgres-pass
       - authentik-secret-key
 
+  authentik-configuration-server:
+    profiles:
+      - authentik-config
+    image: ghcr.io/goauthentik/server:latest
+    restart: unless-stopped
+    command: server
+    hostname: authentik
+    depends_on:
+      authentik-worker:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: ${PG_HOST:-postgres}
+      AUTHENTIK_POSTGRESQL__USER: ${PG_USER:-postgres}
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/postgres-pass
+      AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik-secret-key
+    volumes:
+      - ./.data/authentik/media:/media
+      - ./.data/authentik/custom-templates:/templates
+    ports:
+      - 9000:9000
+    networks:
+      - wisdom
+    secrets:
+      - postgres-pass
+      - authentik-secret-key
+
   authentik-worker:
     image: ghcr.io/goauthentik/server:latest
     restart: unless-stopped

@@ -52,21 +52,41 @@ privileges on the machine!
     ```bash
     nano wisdom.conf
     ```
-5. Build all needed docker images
+5. Startup Authentik for configuration
+    > :warning: Only run the specified command to stop all services from 
+        starting up while trying to start up the configuration for authentik.
+    > :information_source: This step will also initialize the database, if the
+        database is started for the first time
+    ```bash
+    docker compose --profile authentik-config up -d
+    ```
+
+    Now follow the steps described further down under `Configure the platform > Authentik`
+    after accessing the authentik UI on port `9000`
+
+    After finishing the needed setup steps shut down the containers with the 
+    following command:
+    ```bash
+    docker compose --profile authentik-config down
+    ```
+
+6. Build all needed docker images
+    > :warning: The build process for the frontend will fail is no OpenID
+        configuration was set.
+    > :information_source: The build process may take up to 30 minutes!
     ```bash
     docker compose build
     ```
-6. Prepare API Gateway Database
+7. Prepare API Gateway Database
     ```bash
     docker compose run api-gateway kong migrations bootstrap
     ```
-
-6. Start up the containers
+8. Start up the containers
     ```bash
     docker compose up -d
     ```
 
-Now the platform ist deployed on your machine and ready to be configured.
+Now the platform ist deployed on your machine and ready to be used.
 
 ### Configure the platform
 #### Authentik
@@ -132,7 +152,9 @@ authentik's implementation of the `profile` OpenID Connect scope.
     `public`.
 
 4. Now set the `Client ID` in the `wisdom.conf` file together with the 
-    OpenID Configuration URL displayed in the Provider Details
+    OpenID Configuration URL displayed in the Provider Details. When using
+    `localhost` in the OpenID Configuration ID the client accessing the 
+    frontend expects authentik to be running on the client!
 
 
 ## FAQ

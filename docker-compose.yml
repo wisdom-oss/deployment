@@ -297,9 +297,9 @@ services:
       - postgres-pass
     labels:
       - wisdom-oss.isService=true
-      - wisdom-oss.service.name=water-usage-forecasts
-      - wisdom-oss.service.path=/water-usage-forecasts
-      - wisdom-oss.service.upstream-name=water-usage-forecasts
+      - wisdom-oss.service.name=geodata
+      - wisdom-oss.service.path=/geodata
+      - wisdom-oss.service.upstream-name=geodata
 
   consumers:
     build: https://github.com/wisdom-oss/service-consumers.git#${SERVICE_BRANCH:-main}

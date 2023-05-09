@@ -208,7 +208,7 @@ services:
         dockerfile: Dockerfile
         args:
           - OIDC_AUTHORITY=${FRONTEND_OPEN_ID_CONNECT_AUTHORITY:?openid connect authority missing}
-          - OIDC_CLIENT_ID=${FRONTEND_OPEN_ID_CONNECT_AUTHORITY:?openid connect client id missing}
+          - OIDC_CLIENT_ID=${FRONTEND_OPEN_ID_CONNECT_CLIENT_ID:?openid connect client id missing}
     image: wisdom-oss/frontend:main
     hostname: frontend
     networks:

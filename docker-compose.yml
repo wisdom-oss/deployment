@@ -376,7 +376,7 @@ services:
     labels:
       - wisdom-oss.isService=true
       - wisdom-oss.service.name=prophet-usage-forecast
-      - wisdom-oss.service.path=/prophet
+      - wisdom-oss.service.path=/prophet-forecast
       - wisdom-oss.service.upstream-name=prophet-usage-forecast
 
 configs:

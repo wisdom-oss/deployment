@@ -3,6 +3,13 @@
 }
 
 {$AUTHENTIK_BINDING} {
+	@cors_preflight method OPTIONS
+	handle @cors_preflight {
+		header Access-Control-Allow-Origin "*"
+		header Access-Control-Allow-Headers "*"
+		respond 200
+	}
+
 	header Access-Control-Allow-Origin "*"
 	header Access-Control-Allow-Headers "*"
 	reverse_proxy authentik:9000 {

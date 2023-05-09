@@ -383,7 +383,7 @@ secrets:
   postgres-pass:
     file: ./.secrets/.pgpass
   amqp-pass:
-    file: ./.secrets/.rabbitmqpass
+    file: ./.secrets/.amqppass
   redis-pass:
     file: ./.secrets/.redispass
   authentik-secret-key:

@@ -228,6 +228,8 @@ services:
     expose:
       - 8000
     logging: *loggingConfig
+    secrets:
+      - postgres-pass
     deploy:
       mode: replicated
       replicas: ${COMPOSE_SERVICE_REPLICAS:-3}
@@ -262,6 +264,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    secrets:
+      - postgres-pass
     environment:
       - CONFIG_DB_DSN=postgresql://${PG_USER:-postgres}:${PG_PASS:?password is required}@${PG_HOST:-postgres}:${PG_PORT:-5432}/wisdom
       - CONFIG_AMQP_DSN=amqp://${AMQP_USER:-wisdom}:${AMQP_PASSWORD:?password is required}@${AMQP_HOST:-rabbitmq}/%2F
@@ -285,6 +289,8 @@ services:
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
     logging: *loggingConfig
+    secrets:
+      - postgres-pass
     labels:
       - wisdom-oss.service.name=water-usage-forecasts
       - wisdom-oss.service.path=/water-usage-forecasts
@@ -302,6 +308,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    secrets:
+      - postgres-pass
     environment:
       - PG_HOST=${PG_HOST:-postgres}
       - PG_USER=${PG_USER:-postgres}
@@ -331,6 +339,8 @@ services:
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
     logging: *loggingConfig
+    secrets:
+      - postgres-pass
     labels:
       - wisdom-oss.service.name=water-rights
       - wisdom-oss.service.path=/water-rights
@@ -354,6 +364,8 @@ services:
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
     logging: *loggingConfig
+    secrets:
+      - postgres-pass
     labels:
       - wisdom-oss.service.name=prophet-usage-forecast
       - wisdom-oss.service.path=/prophet

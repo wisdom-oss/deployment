@@ -1,126 +1,256 @@
-<p align="center">
-<img src="https://raw.githubusercontent.com/wisdom-oss/brand/main/silhoutte.svg" height="100px"/>
+<div align="center">
+<img height="150px" src="https://raw.githubusercontent.com/wisdom-oss/brand/main/svg/standalone_color.svg">
+<h1>Deployment</h1>
+<p>
+<span>🔐</span>
+All steps require administrative priviliges on the host machine to work
 </p>
+<p>
+<span>🦺</span>
+In its default configuration, Docker modifies the iptables to allow port 
+publishing. The modifications bypass the iptables set by firewall applications.
+Take care when opening up ports!
+</p>
+</div>
 
-# WISdoM OSS Deployment
-> :warning: The instructions used in this repository aim at the current LTS
-> of Ubuntu Server. Other operating systems including the WSL may use other 
-> commands or are not compatible.
+To allow a unified deployment of the project it utilizes
+[Docker](https://www.docker.com) together with 
+[Docker Compose](https://docs.docker.com/compose/) as deployment mechanism.
 
-This repository contains all needed files for deploying the standard 
-installation of the WISdoM platform. Since the project utilizes a microservice 
-architecture the project uses [Docker](https://docs.docker.com) as container 
-orchestration tool.
+> The following instructions and commands aim to support the
+> current LTS Version of Ubuntu (22.04). Both the desktop and server variants
+> are supported.
+>
+> _Using a different operating system or using the Windows Subsystem for Linux
+> (WSL) is not supported by these instructions as they may need anther syntax
+> or may not even support Docker out-of-the-box_
 
-It deploys the following standard services:
-  - HTTP Entrypoint [a [Caddy](https://caddyserver.com/) webserver]
-  - API Gateway (a [Kong Gateway](https://docs.konghq.com/gateway/latest/))
-  - [Authentik](https://goauthentik.io/) as authorization server
-  - PostgreSQL as main database with the [PostGIS](https://postgis.net/) extension
-  - A basic water usage forecasting tool
-  - A water usage forecasting tool based on [Prophet](https://facebook.github.io/prophet/)
-  - A basic geospatial data service
-  - A service for storing files (e.g. PDFs, Excel sheets)
+## Prerequesites
+This section will be used to install the following prerequesites:
+* Docker
+* Docker Compose
+* Git
 
-## Installation
-### Prerequisites
+### Docker and Docker Compose
+There are two ways to install docker on your machine:
+1. Using the convenience script
+2. ✨ Manually adding the package repository and installing the packages
 
-| Hardware                                                       | Software                             |
-|----------------------------------------------------------------|--------------------------------------|
-|Memory: min. 16 GB, _recommended: 32GB_<br>Storage: min. 100 GB | Git, Docker, Docker Compose, OpenSSL |
+#### Using the convenience script
+
+> 🛑🦺 Executing scripts from an untrusted source may result in a
+> broken system configuration as well as secutiry vulnerabilities by installed
+> packages or the contained commands.
+>
+> _Always verify the contents of a script by reading through it. If you don't
+> understand every command **do not execute it!**_
+
+The first is the 
+[convenience script](https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script) 
+created by docker to allow a realatively easy installation that may be used for
+development environments or newcomers that do not feel secure enough around the
+terminal.
+
+Please go to the documentation about the convenience script for further
+information on the usage and prerequesites
+
+[_External Documentation_](https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script)
+
+#### ✨ Manual install using the package repository
+
+##### Removing old versions of Docker
+> 🛑 Software depending on the old packages will stop functioning and may not
+> be compatible with the packages published by Docker Inc.
+
+Since this guide will use the most up to date version of Docker, released 
+directly by Docker Inc., the versions deployed over the default repositories
+need to be removed beforehand. To remove them you will need to uninstall the
+following packages:
+* `docker.io`
+* `docker-compose`
+* `docker-doc`
+* `podman.docker`
+* `containerd`
+* `runc`
+
+To uninstall these packages use the following command which tries to remove
+the packages:
+```sh
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do apt-get remove $pkg; done
+```
+
+##### Adding the new repository
+
+Since now all possibly conflicting packages have been removed, update your
+package index once using the following command:
+```sh
+apt-get update
+```
+
+Now install the following packages, that allow the usage of the signingkey used
+to digitally sign the packages in the repository, to make sure that the
+packages downloaded from the repository are in fact from Docker Inc.:
+* `ca-certificates`
+* `gnupg`
+```sh
+apt-get install ca-certificates gnupg
+```
+
+Now add the GPG signing key issued by Docker Inc. to the list of known
+keys:
+```sh
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+chmod a+r /etc/apt/keyrings/docker.gpg
+```
+
+Now add the repositroy to the known repositories of APT
+```sh
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+To activate the repository for installing Docker update the package repository
+one again using:
+```sh
+apt-get update
+```
+
+##### Install the packages
+Now install the Docker Engine and the Compose Plugin
+```sh
+apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+🎉 And thats it. Now your server has Docker and Docker Compose installed and
+is ready to run the WISdoM project
+
+> Currently the only user allowed to issue `docker` commands is `root`.
+> To allow other users to run `docker` commands without having `sudo`
+> privileges, read the information on the following website:<br/>
+> https://docs.docker.com/engine/install/linux-postinstall
+
+### Git
+Usually `git` is already included in a standard Ubuntu Server installation.
+However, if you are using the desktop variant or used a customized server image 
+for the initial installation of the operating system, you might need to install
+`git`.
+
+#### ✨ Installing stable from the official package repositories
+To install `git` from the standard package repositories just run the following
+commands:
+```sh
+sudo apt-get update
+sudo apt-get install git
+```
+
+#### Installing upstream stable from PPA[^1]
+> 🦺 Packages from PPAs may contain unwanted code and could introduce 
+> vulnerabilities to your system, since the code is not checked by a 3rd-party!
+> 
+> Proceed with care and at your own risk!
+
+To allow the usage of the very latest stable version of `git` directly built
+from source, you may use the PPA. This is not recommended since using a PPA
+may impact the systems stability.
+
+If you still want to use the latest upstream version, you need to execute the
+following command to add the PPA to the sources that APT uses
+```sh
+apt-add-repository ppa:git-core/ppa
+```
+
+Now update your package index and install `git`
+```sh
+apt-get update
+apt-get install git
+```
 
 
-### Installing the platform
-To install the software you need to clone the repository on the machine that is
-supposed to host the platform. You may either connect via SSH or use the 
-Terminal of your choice directly on the machine. However you need to have root
-privileges on the machine!
+## Installing WISdoM
+Since now all prerequisites are installed the process of getting the latest
+version of WISdoM may start.
 
-1. Clone the repository onto your machine
-    ```sh
-    git clone https://github.com/wisdom-oss/deployment.git /opt/wisdom
-    ```
-2. Go into the just cloned repository
-    ```sh
-    cd /opt/wisdom
-    ```
-3. Execute the `generate_config.sh` file
-    ```bash
-    ./generate_config.sh
-    ```
-4. If needed update the configuration file
-    ```bash
-    nano wisdom.conf
-    ```
-5. Startup Authentik for configuration
-    > :warning: Only run the specified command to stop all services from 
-        starting up while trying to start up the configuration for authentik.
-    > :information_source: This step will also initialize the database, if the
-        database is started for the first time
-    ```bash
-    docker compose --profile authentik-config up -d
-    ```
+### Clone the `deployment` repository
+To clone the repository use the following command. This clones the repository
+using HTTPS.
 
-    Now follow the steps described further down under `Configure the platform > Authentik`
-    after accessing the authentik UI on port `9000`
+```sh
+git clone https://github.com/wisdom-oss/deployment.git
+```
 
-    After finishing the needed setup steps shut down the containers with the 
-    following command:
-    ```bash
-    docker compose --profile authentik-config down
-    ```
+### Generate a configuration file
 
-6. Build all needed docker images
-    > :warning: The build process for the frontend will fail is no OpenID
-        configuration was set.
-    > :information_source: The build process may take up to 30 minutes!
-    ```bash
-    docker compose build
-    ```
-7. Prepare API Gateway Database
-    ```bash
-    docker compose run api-gateway kong migrations bootstrap
-    ```
-8. Start up the containers
-    ```bash
-    docker compose up -d
-    ```
+> 🛑🦺 Executing scripts from an untrusted source may result in a
+> broken system configuration as well as secutiry vulnerabilities by installed
+> packages or the contained commands.
+>
+> _Always verify the contents of a script by reading through it. If you don't
+> understand every command **do not execute it!**_
 
-Now the platform ist deployed on your machine and ready to be used.
+To generate the required configuration file execute the `generate_config.sh`
+script contained in the repository
 
-### Configure the platform
-#### Authentik
-##### Administrative User
-Since authentik will not be preconfigured with a password and user you need
-to create the password for the initial user `akadmin`. To achive this, you need
-to open the authentik UI via the binding you entered during the configuration
-generation on the following path: `/if/flow/initial-setup/`. You may now set
-the administrators E-Mail Address and password. Make sure that the password is
-secure!
+```sh
+bash ./generate_config.sh
+```
 
-##### Change the OpenID `profile` scope
-Due to the authentication measures taken by the platform you need to change
-authentik's implementation of the `profile` OpenID Connect scope.
+If needed you may edit the generated `wisdom.conf` file using your favourite
+console text editor (e.g `nano`, `vim`)
 
-1. Open the Authentik Admin UI (`/if/admin/`)
-2. Navigate to the _Property Mappings_ which are located under the _Customization_
-    entry in the sidebar
-3. Enable the display of the managed mappings by flipping the switch labeled
-    _Hide managed mappings_
-4. Edit the mapping named `authentik default OAuth Mapping: OpenID 'profile'`
-5. Replace the contents of the mapping with the following code:
-    ```python
-    # This function will help resolving the parents of a group
+### Configure the Authentification Platform
+> 🛑 If the authentification platform is not configured the WISdoM platform 
+> will not work correctly!
+
+Since the authentification platform requires some configuration before it works
+correctly, start up just the authentification platform for configuration.
+
+```sh
+docker compose --profile authentik-config up -d
+```
+
+#### Creating the administrative user
+> 🦺 Please use a strong and secure password for the `akadmin` user since this
+> account will be the initial super user on the platform. Should the password
+> be leaked or cracked, an attacker could steal other users credentials or
+> access external user sources
+
+Since the authentification platform does not deploy with a default password you
+need to set the initial password for the `akadmin` user.
+
+1. Navigate to the following address: `http://<machine-ip-or-hostame>:9000/if/flow/initial-setup/`
+
+2. Set a _secure_ password for the `akadmin` user and set an administrators
+   email.
+
+#### Updating the OpenID `profile` scope
+
+Due to the default configuration of the authentification platform, users will
+not be assigned to the parent groups they are members of when requesting the
+`profile` scope.
+Since the parent groups may be important for the API requests,
+the definition of the profile scope needs to be updated in the authentification
+platform.
+
+
+> 🛑 Pay attention when copying the configuration. A typo could result in an
+> inaccessible platform!
+
+1. Navigate to the Administrative UI `http://<machine-ip-or-hostame>:9000/if/admin`
+2. Open the `Cusomization` menu and select the `Property Mappings`
+3. Show the managed mappings by disabling the switch labled `Hide managed mappings`
+4. Edit the `authentik default OAuth Mapping: OpenID 'profile` mapping
+5. Replace the current contens of the mapping with the following code and save
+   the changes.
+    ```py
     def resolve_parents(group, parentList):
         parentList.append(group)
         if group.parent is not None:
             parentList.append(group.parent)
             resolve_parents(group.parent, parentList)
-    
-    # Now get all groups the user is directly assigned to
-    userGroups = [g.name for g in user.ak_groups.all()]
 
-    # Now resolve all parents of a group if the group has a parent
+    userGroups = [g.name for g in user.ak_groups.all()]
     for group in user.ak_groups.all():
         if group.parent is not None:
             parents = []
@@ -129,42 +259,104 @@ authentik's implementation of the `profile` OpenID Connect scope.
                 userGroups.append(parent.name)
 
     return {
-        # Because authentik only saves the user's full name, and has no concept of first and last names,
-        # the full name is used as given name.
-        # You can override this behaviour in custom mappings, i.e. `request.user.name.split(" ")`
         "name": request.user.name,
         "given_name": request.user.name,
         "preferred_username": request.user.username,
         "nickname": request.user.username,
-        # groups is not part of the official userinfo schema, but is a quasi-standard
         "groups": list(set(userGroups)),
+        "picture": request.user.avatar,
+        "isAdmin": request.user.is_staff
     }
     ```
-6. Save the edited mapping
 
-##### Creating a OpenID Connect Provider for the frontend
-1. Open the administrative UI of your authentik installation
-    `/if/admin/`
+#### Create a OAuth 2.0/OpenID Connect provider and application for the frontend
+To allow the frontend to use the authentification platform for logging in,
+a OAuth 2.0/OpenID Connect provider is required.
+Furhtermore, an application entry is required to activate the provider and let
+the authentification platform manage access the the application.
 
-2. Now navigate to the Providers using the left sidebar `Applications/Providers`
+##### Creating a OAuth 2.0/OpenID Connect provider
+> 🦺 Since the frontend runs in a browser and therefore is considered a public
+> client, make sure to set the client type to `public`.
 
-3. Now Create a new `OAuth2/OpenID` provider with the client type set to 
-    `public`.
+1. Navigate to the Administrative UI `http://<machine-ip-or-hostame>:9000/if/admin`
+2. Open the `Applications` menu and select `Providers`
+3. Select the `OAuth2/Open ID Provider`
+4. Now set the client type as `public` and set the redirect URIs/Origin regex to
+   `.*`
+5. Save the new provider
 
-4. Now set the `Client ID` in the `wisdom.conf` file together with the 
-    OpenID Configuration URL displayed in the Provider Details. When using
-    `localhost` in the OpenID Configuration ID the client accessing the 
-    frontend expects authentik to be running on the client!
+##### Creating a new appliction entry
+> 🛑 Make sure to select the correct provider, if there are multiple providers
+> available. If the wrong provider is selected, the platform will generate
+> authentification errors
 
+1. Navigate to the Administrative UI `http://<machine-ip-or-hostame>:9000/if/admin`
+2. Open the `Applications` menu and select `Applications`
+3. Create a new application
+4. Set the fields to your own liking
+5. Under the `provider` field, select the just created OAuth 2.0/OpenID Connect 
+   provider
 
-## FAQ
-### Why authentik as authorization server
-Choosing a authorization service was kind of a struggle in the beginning since 
-writing a microservice containing some basic OAuth2.0 implementation sounds nice,
-but it wouldn't support importing users from other sources like LDAP, SAML, 
-AzureAD or another OpenID Connect provider. But this kind of functionality is
-supported by authentik out of the box with a simple UI for configuration.
+##### Updating the platform configuration
+Now the generated client id and open id connect issuer need to be set in the
+platform configuration to allow the frontend to pick up those values during
+the build proccess.
 
-Therefore the choice fell on authentik for a authorization server. You may
-replace it with another service of your choice, as long as it supports the
-OpenID Connect protocol.
+1. Navigate to the Administrative UI `http://<machine-ip-or-hostame>:9000/if/admin`
+2. Open the `Applications` menu and select `Providers`
+3. Select the `OAuth2/Open ID Provider`
+4. Open the provider you created in the previous step.
+5. Open the `wisdom.conf` file on the server
+6. Assign the OpenID configuration url displayed in the authentification 
+   platform to the `FRONTEND_OPEN_ID_CONNECT_AUTHORITY` variable
+7. Assign the client id displayed in the authentification platform to the
+   `FRONTEND_OPEN_ID_CONNECT_CLIENT_ID` variable
+
+#### Clean up
+Since now all required configuration steps have been completed the platform
+is ready to be built and hosted on the server. However, some cleanup steps are
+required to stop zombie containers from existing. Since only the 
+authentification platform is currently running, stop it
+
+```sh
+docker compose --profile authentik-config down
+```
+
+### Building the microservices and the frontend
+Since all configuration and cleanup measures have been taken, start to build
+the containers for the WISdoM platform.
+
+> ⌛ Depending on the hardware configuration, the build process may take a
+> long time. Durations of up to 45 minutes have been reported...
+> 
+> _Time to get a coffee and a snack_ ☕🍩
+
+```sh
+docker compose build
+```
+
+### Preparing the API gateway
+Since the API gateway used for the WISdoM platform needs to initialize the
+database before starting it for the first time, run some needed migrations
+and the database bootstrap
+```sh
+docker compose run api-gateway kong migrations bootstrap
+```
+
+### Start up all containers
+After the API gateway has been configured, no further steps are required,
+except of starting up the compose file
+```sh
+docker compose up -d
+```
+After about 2-3 minutes the frontend will be accessible under the bindings
+set up while generating the configuration file.
+
+<!-- Footnotes below this point -->
+[^1]: PPA is an acroynm for a Personal Package Archive. These type of archives
+      are directly maintained by the developers publishing the packages 
+      available in them. _However, packages installed from them are not from
+      official sources any may impact the stablility of your system. Use with
+      care!_
+    

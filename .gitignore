@@ -1,10 +1,5 @@
-.vscode
-.idea/codeStyles/codeStyleConfig.xml
-.idea/deployment.iml
-.idea/discord.xml
-.idea/inspectionProfiles/profiles_settings.xml
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-.tokens/
-.env
+.secrets/
+.data/
+*.conf
+*.conf_backup
+docker-compose.override.yml

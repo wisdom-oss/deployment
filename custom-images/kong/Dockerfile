@@ -1,6 +1,7 @@
-FROM kong
+FROM kong:alpine
 USER root
-RUN luarocks install wisdom-kong-internal-auth-plugin
+RUN apk add git
+RUN luarocks install kong-internal-db-auth
 USER kong
 ENTRYPOINT ["/docker-entrypoint.sh"]
 EXPOSE 8000 8443 8001 8444

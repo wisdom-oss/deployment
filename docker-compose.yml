@@ -1,21 +1,6 @@
 # WISdoM Platform Compose File
 version: "3.9"
 services:
-  # == Core services ==
-  # The services listed here are always starting and required for the Dashboard
-  # to function. Therefore, no profile is associated to them
-
-  # Service Watcher
-  # The service watcher regularly scans the docker host for containers running
-  # on it which are labelled according to the watchers documentation and adds
-  # them to the api gateway
-
-  # HTTP Entrypoint
-  # The http entrypoint uses caddy as the http server and works as a reverse
-  # proxy for the different parts of the frontend and backend. It mainly routes
-  # the traffic from a external user either to the authentik server running as
-  # authorization software, the frontend or the api gateway for requests to
-  # microservices
   http-entrypoint:
     image: caddy:alpine
     restart: always
@@ -36,21 +21,18 @@ services:
         max-size: 5m
         max-file: 3
 
-  # As database backend a PostgreSQL database is used with the PostGIS extension
-  # enabled to allow the storage of geospatial data for the services. The data
-  # is stored in a local mount to allow easier backup
   postgres:
     image: postgis/postgis:14-3.3-alpine
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "--dbname=wisdom"]
-      start_period: 30s
-      interval: 20s
+      start_period: 15s
+      interval: 10s
       retries: 5
       timeout: 5s
     restart: always
     hostname: postgres
     volumes:
-      - ./.data/postgres:/var/lib/postgresql/data
+      - ./.data/postgres/14:/var/lib/postgresql/data
       - ./data/db-init/:/docker-entrypoint-initdb.d/
     networks:
       - wisdom
@@ -63,13 +45,8 @@ services:
       - postgres-pass
     logging: *loggingConfig
 
-  #The WISdoM Dashboard uses the Kong API Gateway to orgnaize the
-  # microservice instances in the backend. It is extended by the gateway service
-  # watcher which scans the docker host for containers tagged by lables which
-  # are documented in the documentation for this repository.
   api-gateway:
-    build: ./custom-images/kong/
-    image: wisdom-oss/api-gateway:latest
+    image: ghcr.io/wisdom-oss/api-gateway:main
     hostname: api-gateway
     depends_on:
       postgres:
@@ -79,12 +56,6 @@ services:
       - KONG_PG_USER=${PG_USER:-postgres}
       - KONG_PG_HOST=${PG_HOST:-postgres}
       - KONG_DATABASE=postgres
-      - KONG_PROXY_ACCESS_LOG=/dev/null
-      - KONG_ADMIN_ACCESS_LOG=/dev/null
-      - KONG_PROXY_ERROR_LOG=/dev/stderr
-      - KONG_ADMIN_ERROR_LOG=/dev/stderr
-      - KONG_ADMIN_LISTEN=0.0.0.0:8001
-      - KONG_PLUGINS=kong-internal-db-auth,bundled
     networks:
       - wisdom
     labels:
@@ -100,7 +71,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       start_period: 20s
-      interval: 30s
+      interval: 15s
       retries: 5
       timeout: 3s
     networks:
@@ -190,19 +161,6 @@ services:
       - postgres-pass
       - authentik-secret-key
 
-  rabbitmq:
-    image: rabbitmq:3-alpine
-    hostname: rabbitmq
-    networks:
-      - wisdom
-    restart: always
-    expose:
-      - 5672
-    logging: *loggingConfig
-    environment:
-      - RABBITMQ_DEFAULT_USER=${AMQP_USER:-wisdom}
-      - RABBITMQ_DEFAULT_PASS=${AMQP_PASSWORD:?amqp password required}
-
   frontend:
     build:
         context: https://github.com/wisdom-oss/frontend-workspace.git#${FRONTEND_BRANCH:-main}
@@ -210,19 +168,18 @@ services:
         args:
           - OIDC_AUTHORITY=${FRONTEND_OPEN_ID_CONNECT_AUTHORITY:?openid connect authority missing}
           - OIDC_CLIENT_ID=${FRONTEND_OPEN_ID_CONNECT_CLIENT_ID:?openid connect client id missing}
-    image: wisdom-oss/frontend:main
+          - MOD_BRANCH=${FRONTEND_BRANCH:-main}
+    image: ghcr.io/wisdom-oss/frontend:main
     hostname: frontend
     networks:
         - wisdom
     restart: always
-    # Expose the port 80 to other services
     expose:
         - 80
     logging: *loggingConfig
 
-  usage-forecasts-rest:
-    build: https://github.com/wisdom-oss/service-water-usage-forecasts-rest.git#${SERVICE_BRANCH:-main}
-    image: wisdom-oss/usage-forecasts-rest:${SERVICE_BRANCH:-main}-latest
+  usage-forecasts:
+    image: ghcr.io/wisdom-oss/service-usage-forecasts:${SERVICE_BRANCH:-main}
     networks:
       - wisdom
     restart: always
@@ -243,41 +200,15 @@ services:
       - PG_USER=${PG_USER:-postgres}
       - PG_PASS_FILE=/run/secrets/postgres-pass
       - PG_PORT=${PG_PORT:-5432}
-      - AMQP_HOST=${AMQP_HOST:-rabbitmq}
-      - AMQP_USER=${AMQP_USER:-wisdom}
-      - AMQP_PASS_FILE=/run/secrets/amqp-pass
-      - AMQP_EXCHANGE=${SERVICE__WATER_USAGE_FORECASTS__AMQP_EXCHANGE:-water-usage-forecasts}
-      - CALCULATION_MODULE_ROUTING_KEY=${SERVICE__WATER_USAGE_FORECASTS__AMQP_ROUTING_KEY:-requests}
     labels:
       - wisdom-oss.isService=true
       - wisdom-oss.service.name=water-usage-forecasts
       - wisdom-oss.service.path=/water-usage-forecasts
       - wisdom-oss.service.upstream-name=water-usage-forecasts
-
-  usage-forecasts-calculations:
-    build: https://github.com/wisdom-oss/service-water-usage-forecasts.git#${SERVICE_BRANCH:-main}
-    image: wisdom-oss/usage-forecasts-rest-calculations:${SERVICE_BRANCH:-main}-latest
-    networks:
-      - wisdom
-    restart: always
-    logging: *loggingConfig
-    deploy:
-      mode: replicated
-      replicas: ${COMPOSE_SERVICE_REPLICAS:-3}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    secrets:
-      - postgres-pass
-      - amqp-pass
-    environment:
-      - CONFIG_DB_DSN=postgresql://${PG_USER:-postgres}:${PG_PASS:?password is required}@${PG_HOST:-postgres}:${PG_PORT:-5432}/wisdom
-      - CONFIG_AMQP_DSN=amqp://${AMQP_USER:-wisdom}:${AMQP_PASSWORD:?password is required}@${AMQP_HOST:-rabbitmq}/%2F
     
 
   geodata:
-    build: https://github.com/wisdom-oss/service-geo-data-rest.git#${SERVICE_BRANCH:-main}
-    image: wisdom-oss/geodata-rest:${SERVICE_BRANCH:-main}-latest
+    image: ghcr.io/wisdom-oss/geodata-rest:${SERVICE_BRANCH:-main}
     restart: always
     networks:
       - wisdom
@@ -302,8 +233,7 @@ services:
       - wisdom-oss.service.upstream-name=geodata
 
   consumers:
-    build: https://github.com/wisdom-oss/service-consumers.git#${SERVICE_BRANCH:-main}
-    image: wisdom-oss/consumers-rest:${SERVICE_BRANCH:-main}-latest
+    image: ghcr.io/wisdom-oss/service-consumers-rest:${SERVICE_BRANCH:-main}
     restart: always
     networks:
       - wisdom
@@ -329,7 +259,7 @@ services:
 
   water-rights:
     build: https://github.com/wisdom-oss/service-water-rights.git#${SERVICE_BRANCH:-main}
-    image: wisdom-oss/water-rights-rest:${SERVICE_BRANCH:-main}-latest
+    image: ghcr.io/wisdom-oss/water-rights-rest:${SERVICE_BRANCH:-main}
     restart: always
     networks:
       - wisdom
@@ -352,32 +282,6 @@ services:
       - wisdom-oss.service.name=water-rights
       - wisdom-oss.service.path=/water-rights
       - wisdom-oss.service.upstream-name=water-rights
-
-  prophet-forecast:
-    build: https://github.com/wisdom-oss/service-prophet-forecast.git#${SERVICE_BRANCH:-main}
-    image: wisdom-oss/prophet-forecast-rest:${SERVICE_BRANCH:-main}-latest
-    restart: always
-    networks:
-      - wisdom
-    deploy:
-      mode: replicated
-      replicas: ${COMPOSE_REPLICAS:-3}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      - PG_HOST=${PG_HOST:-postgres}
-      - PG_USER=${PG_USER:-postgres}
-      - PG_PASS_FILE=/run/secrets/postgres-pass
-      - PG_PORT=${PG_PORT:-5432}
-    logging: *loggingConfig
-    secrets:
-      - postgres-pass
-    labels:
-      - wisdom-oss.isService=true
-      - wisdom-oss.service.name=prophet-usage-forecast
-      - wisdom-oss.service.path=/prophet-forecast
-      - wisdom-oss.service.upstream-name=prophet-usage-forecast
 
 configs:
   caddyfile:

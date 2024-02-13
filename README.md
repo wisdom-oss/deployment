@@ -13,6 +13,10 @@
 > listed below:
 >   - Host: The machine the wisdom platform will be installed to
 
+> [!TIP]
+> The commands in this guide require `root` permissions on the host. Please check
+> if you have the needed permissions before continuing. 
+
 > [!NOTE]
 > The WISdoM platform supports all x86_64 platforms supported by Docker/Podman.
 > Please check the [Docker]/[Podman] documentation for further information on
@@ -29,34 +33,62 @@ WISdoM platform the Containers are deployed in a stack which is managed by the
 selected container management (e.g. Docker).
 
 ## Deploying the platform
-### Prerequisites
+### 0. Prerequisites
 To be able to use the WISdoM platform on your host, the following prerequisites
-are required for a successfuly deployment:
-  - Git
-  - Docker
-  - Docker Compose
+are required for a successfully deployment:
 
+**A selection of either**
+  - Docker ([Instructions](https://docs.docker.com/engine/install/))
+  - Docker Compose ([Instructions](https://docs.docker.com/compose/install/))
 
-> [!WARNING]
-> Please check the contents of the convenience scripts linked in the following
-> installation instructions as they may contain unwanted commands or actions 
-> that may pose a security risk!
+**or**
+  - Podman ([Instructions](https://podman.io/docs/installation))
+  - Podman Compose ([Instructions](https://podman.io/docs/installation))
 
+accompanied by the following executables:
+  - `git`
 
-<details><summary>Installing Git</summary>
+### 1. Clone this repository
+Since all configuration updates are delivered by this repository, you need to
+clone this repository to allow updating via `git`.
+You may pull this repository via HTTPS or SSH using the following commands:
 
-#### Using the convenience script
+```sh
+git clone https://github.com/wisdom-oss/deployment.git wisdom # for cloning via HTTPS
+git clone git@github.com:wisdom-oss/deployment.git wisdom # cloning via SSH
+```
 
-</details>
+### 2. Generate your configuration file
+> [!NOTE]
+> If you already use an OpenID Connect compatible server you may specify it
+> during the initialization.
+> If not, [Authentik] will be deployed alongside with the WISdoM platform to
+> enable authentication and identity management.
 
-<details><summary>Installing Docker</summary>
+[Authentik]: https://goauthentik.io/docs/
 
-#### Using the convenience script
+Now execute the `init.sh` file to generate your configuration file which is used
+to store and handle all configurable options.
 
-</details>
+```sh
+cd wisdom
+chmod +x init.sh
+./init.sh
+```
 
-<details><summary>Installing Podman</summary>
+### 3. Prepare Database
+> [!IMPORTANT]
+> Please replace the `docker compose` command with `podman-compose` if you
+> installed Podman as your container engine
 
-#### Using the convenience script
+Now you need to prepare the PostgreSQL database to allow the API Gateway and
+depending on your configuration the authentik containers to store data in the
+database.
 
-</details>
+```sh
+docker compose up -d postgres
+# create the required database for the API Gateway
+docker compose exec -u postgres postgres psql -c "CREATE DATABASE kong"; 
+# (optional) create the database for Authentik
+docker compose exec -u postgres postgres psql -c "CREATE DATABASE authentik";
+```s

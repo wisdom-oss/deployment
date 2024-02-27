@@ -6,7 +6,6 @@
 <img alt="Static Badge" src="https://img.shields.io/badge/podman-compatible-brightgreen?style=for-the-badge&logo=podman">
 <img alt="Static Badge" src="https://img.shields.io/badge/docker-compatible-brightgreen?style=for-the-badge&logo=docker&logoColor=white">
 </div>
-<hr style="background-color: #fff; margin: 5px"/>
 
 > [!TIP]
 > To lower the possibilities of confusion the following words are defined as
@@ -91,4 +90,4 @@ docker compose up -d postgres
 docker compose exec -u postgres postgres psql -c "CREATE DATABASE kong"; 
 # (optional) create the database for Authentik
 docker compose exec -u postgres postgres psql -c "CREATE DATABASE authentik";
-```s
+```

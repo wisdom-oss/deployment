@@ -46,7 +46,7 @@ services:
   
   frontend:
     build:
-      context: https://github.com/wisdom-oss/frontend-workspace.git#${BRANCH:-main}
+      context: https://github.com/wisdom-oss/frontend-workspace.git#${FRONTEND_BRANCH:-main}
       dockerfile: Dockerfile
       args:
         - OIDC_AUTHORITY=${OIDC_ISSUER:?OpenID Connect Issuer is not configured}

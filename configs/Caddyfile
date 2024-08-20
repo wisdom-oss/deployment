@@ -1,0 +1,36 @@
+{
+	default_bind 0.0.0.0
+}
+
+:80 {
+	@api {
+		method GET PUT POST PATCH DELETE
+		path /api/*
+	}
+
+	@static-files {
+		method GET
+		path /files/*
+	}
+
+	handle @api {
+		uri strip_prefix /api
+		reverse_proxy backend:80 {
+			header_up X-Real-IP {remote_host}
+			header_up -X-Authenticated-*
+			header_down -Server
+		}
+	}
+
+	handle @static-files {
+		uri strip_prefix /files
+		root * /files
+		file_server
+	}
+
+	handle {
+		reverse_proxy frontend:80 {
+			header_down -Server
+		}
+	}
+}

@@ -11,7 +11,7 @@ services:
     environment: &dbEnvironment
       PG_HOST: ${PG_HOST:-db}
       PG_USER: ${PG_USER:-postgres}
-      PG_PASS_FILE: /run/secret/postgress-password
+      PG_PASS_FILE: /run/secrets/postgres-password
       PG_PORT: ${PG_PORT:-5432}
     secrets:
       - postgres-password

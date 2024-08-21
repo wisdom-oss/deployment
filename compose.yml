@@ -22,7 +22,7 @@ services:
       - db-data:/home/postgres/pgdata/data
     environment:
       - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
-      - POSTGRES_DB=wisdom
+      - POSTGRES_DB=${PG_DATABASE:-wisdom}
     secrets:
       - postgres-password
     healthcheck:

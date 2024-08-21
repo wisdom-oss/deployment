@@ -91,10 +91,7 @@ services:
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency
     environment:
-      <<: *dbEnvironment
       REDIS_URI: redis://redis:6379
-    secrets:
-      - postgres-password
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dwdProxy.rule=PathPrefix(`/dwd`)"

@@ -101,7 +101,7 @@ services:
       - "traefik.http.middlewares.dwdProxy.stripprefix.prefixes=/dwd"
 
   external-datasources:
-    image: ghcr.io/wisdom-oss/service-datasource-management:{BRANCH:-latest}
+    image: ghcr.io/wisdom-oss/service-datasource-management:${BRANCH:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency

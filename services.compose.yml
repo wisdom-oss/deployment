@@ -115,8 +115,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.datasourceManagement.middlewares=datasourceManagement"
-      - "traefik.http.routers.datasourceManagement.rule=PathPrefix(`/datasources`)"
-      - "traefik.http.middlewares.datasourceManagement.stripprefix.prefixes=/datasources"
+      - "traefik.http.routers.datasourceManagement.rule=PathPrefix(`/data-sources`)"
+      - "traefik.http.middlewares.datasourceManagement.stripprefix.prefixes=/data-sources"
 
     
     

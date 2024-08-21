@@ -42,11 +42,10 @@ git clone https://github.com/wisdom-oss/deployment.git wisdom
 
 > [!CAUTION]
 > Changing the value in the `.pgpass`file will not be reflected upon the
-> database container. You may only change this value if you are connecting
+> database user. You may only change this value if you are connecting
 > your WISdoM platform to an external database
 
 Afterwards generate a hexadecimal password for the PostgreSQL database and store
 it in the `.pgpass` file.
 Please also edit the `wisdom.sample.conf` file, set the `PG_PASS` value
 to the same password and save the file as `wisdom.conf`
-

@@ -86,7 +86,7 @@ services:
       - "traefik.http.middlewares.groundwaterLevels.stripprefix.prefixes=/groundwater-levels"
 
   dwd-proxy:
-    image: ghcr.io/wisdom-oss/dwd-proxy:${BRANCH:-latest}
+    image: ghcr.io/wisdom-oss/service-dwd-proxy:${BRANCH:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency

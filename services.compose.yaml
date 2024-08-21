@@ -17,6 +17,7 @@ services:
       - postgres-password
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.geodata.middlewares=geodata"
       - "traefik.http.routers.geodata.rule=PathPrefix(`/geodata`)"
       - "traefik.http.middlewares.geodata.stripprefix.prefixes=/geodata"  
 
@@ -30,6 +31,7 @@ services:
       - postgres-password
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.consumers.middlewares=consumers"
       - "traefik.http.routers.consumers.rule=PathPrefix(`/consumers`)"
       - "traefik.http.middlewares.consumers.stripprefix.prefixes=/consumers"
   
@@ -43,6 +45,7 @@ services:
       - postgres-password
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.waterRights.middlewares=waterRights"
       - "traefik.http.routers.waterRights.rule=PathPrefix(`/water-rights`)"
       - "traefik.http.middlewares.waterRights.stripprefix.prefixes=/water-rights"
   
@@ -56,6 +59,7 @@ services:
       - postgres-password
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.usageForecasts.middlewares=usageForecasts"
       - "traefik.http.routers.usageForecasts.rule=PathPrefix(`/water-usage-forecasts`)"
       - "traefik.http.middlewares.usageForecasts.stripprefix.prefixes=/water-usage-forecasts"
 
@@ -69,6 +73,7 @@ services:
       - postgres-password
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.usageHistory.middlewares=usageHistory"
       - "traefik.http.routers.usageHistory.rule=PathPrefix(`/water-usage-history`)"
       - "traefik.http.middlewares.usageHistory.stripprefix.prefixes=/water-usage-history"
 
@@ -82,6 +87,7 @@ services:
       - postgres-password
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.groundwaterLevels.middlewares=groundwaterLevels"
       - "traefik.http.routers.groundwaterLevels.rule=PathPrefix(`/groundwater-levels`)"
       - "traefik.http.middlewares.groundwaterLevels.stripprefix.prefixes=/groundwater-levels"
 
@@ -94,6 +100,7 @@ services:
       REDIS_URI: redis://redis:6379
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.dwdProxy.middlewares=dwdProxy"
       - "traefik.http.routers.dwdProxy.rule=PathPrefix(`/dwd`)"
       - "traefik.http.middlewares.dwdProxy.stripprefix.prefixes=/dwd"
 
@@ -107,8 +114,9 @@ services:
       - postgres-password
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.datasourceManagement.rule=PathPrefix(`/`)"
-      - "traefik.http.middlewares.datasourceManagement.stripprefix.prefixes=/dwd"
+      - "traefik.http.routers.datasourceManagement.middlewares=datasourceManagement"
+      - "traefik.http.routers.datasourceManagement.rule=PathPrefix(`/datasources`)"
+      - "traefik.http.middlewares.datasourceManagement.stripprefix.prefixes=/datasources"
 
     
     

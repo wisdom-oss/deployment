@@ -9,10 +9,11 @@ services:
         restart: true
         required: true
     environment: &dbEnvironment
-      PG_HOST: ${PG_HOST:-db}
-      PG_USER: ${PG_USER:-postgres}
-      PG_PASS_FILE: /run/secrets/postgres-password
-      PG_PORT: ${PG_PORT:-5432}
+      PGHOST: ${PG_HOST:-db}
+      PGUSER: ${PG_USER:-postgres}
+      PGPASSFILE: /run/secrets/postgres-password
+      PGPORT: ${PG_PORT:-5432}
+      PGDATABASE: ${PG_DATABASE:-wisdom}
     secrets:
       - postgres-password
     labels:

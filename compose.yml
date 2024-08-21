@@ -61,11 +61,6 @@ services:
     command: 
     - "--providers.docker=true"
     - "--providers.docker.exposedbydefault=false"
-    - "--api.dashboard=true"
-    - "--api.insecure=true"
-    ports:
-      - 80:80
-      - 8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 configs:

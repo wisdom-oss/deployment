@@ -1,6 +1,16 @@
+x-database-credentials: &dbEnvironment
+  PGHOST: ${PG_HOST:-db}
+  PGUSER: ${PG_USER:-postgres}
+  PGPASS: ${PG_PASS:?postgres password required}
+  PGPORT: ${PG_PORT:-5432}
+  PGDATABASE: ${PG_DATABASE:-wisdom}
+
+
 services:
-  geodata:
-    image: ghcr.io/wisdom-oss/service-geo-data-rest:${BRANCH:-latest}
+
+  authentication:
+    image: ghcr.io/wisdom-oss/service-user-management:${SERVICE_TAG:-latest}
+    container_name: authentication
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: &dbDependency
@@ -8,116 +18,112 @@ services:
         condition: service_healthy
         restart: true
         required: true
-    environment: &dbEnvironment
-      PGHOST: ${PG_HOST:-db}
-      PGUSER: ${PG_USER:-postgres}
-      PGPASSFILE: /run/secrets/postgres-password
-      PGPORT: ${PG_PORT:-5432}
-      PGDATABASE: ${PG_DATABASE:-wisdom}
-    secrets:
-      - postgres-password
+    environment: 
+      <<: *dbEnvironment
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:?oidc client id requried}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?oidc client secret requried}
+      OIDC_ISSUER: ${OIDC_ISSUER:?oidc issuer not set}
+      
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.geodata.middlewares=geodata"
+      - "traefik.http.routers.authentication.middlewares=authenticationPrefixStrip"
+      - "traefik.http.routers.authentication.rule=PathPrefix(`/auth`)"
+      - "traefik.http.middlewares.authenticationPrefixStrip.stripprefix.prefixes=/auth"
+    
+  geodata:
+    image: ghcr.io/wisdom-oss/service-geo-data-rest:${SERVICE_TAG:-latest}
+    restart: unless-stopped
+    scale: ${SERVICE_REPLICAS:-1}
+    depends_on: *dbDependency
+    environment: *dbEnvironment
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.geodata.middlewares=geodataPrefixStrip"
       - "traefik.http.routers.geodata.rule=PathPrefix(`/geodata`)"
-      - "traefik.http.middlewares.geodata.stripprefix.prefixes=/geodata"  
+      - "traefik.http.middlewares.geodataPrefixStrip.stripprefix.prefixes=/geodata"  
 
   consumers:
-    image: ghcr.io/wisdom-oss/service-consumers:${BRANCH:-latest}
+    image: ghcr.io/wisdom-oss/service-consumers:${SERVICE_TAG:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency
     environment: *dbEnvironment
-    secrets:
-      - postgres-password
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.consumers.middlewares=consumers"
+      - "traefik.http.routers.consumers.middlewares=consumersPrefixStrip"
       - "traefik.http.routers.consumers.rule=PathPrefix(`/consumers`)"
-      - "traefik.http.middlewares.consumers.stripprefix.prefixes=/consumers"
+      - "traefik.http.middlewares.consumersPrefixStrip.stripprefix.prefixes=/consumers"
   
   water-rights:
-    image: ghcr.io/wisdom-oss/service-water-rights:${BRANCH:-latest}
+    image: ghcr.io/wisdom-oss/service-water-rights:${SERVICE_TAG:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency
     environment: *dbEnvironment
-    secrets:
-      - postgres-password
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.waterRights.middlewares=waterRights"
+      - "traefik.http.routers.waterRights.middlewares=waterRightsPrefixStrip"
       - "traefik.http.routers.waterRights.rule=PathPrefix(`/water-rights`)"
-      - "traefik.http.middlewares.waterRights.stripprefix.prefixes=/water-rights"
+      - "traefik.http.middlewares.waterRightsPrefixStrip.stripprefix.prefixes=/water-rights"
   
   usage-forecasts:
-    image: ghcr.io/wisdom-oss/service-usage-forecasts:${BRANCH:-latest}
+    image: ghcr.io/wisdom-oss/service-usage-forecasts:${SERVICE_TAG:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency
     environment: *dbEnvironment
-    secrets:
-      - postgres-password
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.usageForecasts.middlewares=usageForecasts"
+      - "traefik.http.routers.usageForecasts.middlewares=usageForecastsPrefixStrip"
       - "traefik.http.routers.usageForecasts.rule=PathPrefix(`/water-usage-forecasts`)"
-      - "traefik.http.middlewares.usageForecasts.stripprefix.prefixes=/water-usage-forecasts"
+      - "traefik.http.middlewares.usageForecastsPrefixStrip.stripprefix.prefixes=/water-usage-forecasts"
 
   usage-history:
-    image: ghcr.io/wisdom-oss/service-usage-history:${BRANCH:-latest}
+    image: ghcr.io/wisdom-oss/service-usage-history:${SERVICE_TAG:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency
     environment: *dbEnvironment
-    secrets:
-      - postgres-password
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.usageHistory.middlewares=usageHistory"
+      - "traefik.http.routers.usageHistory.middlewares=usageHistoryPrefixStrip"
       - "traefik.http.routers.usageHistory.rule=PathPrefix(`/water-usage-history`)"
-      - "traefik.http.middlewares.usageHistory.stripprefix.prefixes=/water-usage-history"
+      - "traefik.http.middlewares.usageHistoryPrefixStrip.stripprefix.prefixes=/water-usage-history"
 
   groundwater-levels:
-    image: ghcr.io/wisdom-oss/service-groundwater-levels:${BRANCH:-latest}
+    image: ghcr.io/wisdom-oss/service-groundwater-levels:${SERVICE_TAG:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency
     environment: *dbEnvironment
-    secrets:
-      - postgres-password
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.groundwaterLevels.middlewares=groundwaterLevels"
+      - "traefik.http.routers.groundwaterLevels.middlewares=groundwaterLevelsPrefixStrip"
       - "traefik.http.routers.groundwaterLevels.rule=PathPrefix(`/groundwater-levels`)"
-      - "traefik.http.middlewares.groundwaterLevels.stripprefix.prefixes=/groundwater-levels"
+      - "traefik.http.middlewares.groundwaterLevelsPrefixStrip.stripprefix.prefixes=/groundwater-levels"
 
   dwd-proxy:
-    image: ghcr.io/wisdom-oss/service-dwd-proxy:${BRANCH:-latest}
+    image: ghcr.io/wisdom-oss/service-dwd-proxy:${SERVICE_TAG:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
-    depends_on: *dbDependency
     environment:
       REDIS_URI: redis://redis:6379
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dwdProxy.middlewares=dwdProxy"
+      - "traefik.http.routers.dwdProxy.middlewares=dwdProxyPrefixStrip"
       - "traefik.http.routers.dwdProxy.rule=PathPrefix(`/dwd`)"
-      - "traefik.http.middlewares.dwdProxy.stripprefix.prefixes=/dwd"
+      - "traefik.http.middlewares.dwdProxyPrefixStrip.stripprefix.prefixes=/dwd"
 
-  external-datasources:
-    image: ghcr.io/wisdom-oss/service-datasource-management:${BRANCH:-latest}
+  smartmeters:
+    image: ghcr.io/wisdom-oss/service-smartmeter-rest:${SERVICE_TAG:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency
-    environment:  *dbEnvironment
-    secrets:
-      - postgres-password
+    environment: *dbEnvironment
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.datasourceManagement.middlewares=datasourceManagement"
-      - "traefik.http.routers.datasourceManagement.rule=PathPrefix(`/data-sources`)"
-      - "traefik.http.middlewares.datasourceManagement.stripprefix.prefixes=/data-sources"
-
+      - "traefik.http.routers.smartmeter.middlewares=smartmeterPrefixStrip"
+      - "traefik.http.routers.smartmeter.rule=PathPrefix(`/smartmeter`)"
+      - "traefik.http.middlewares.smartmeterPrefixStrip.stripprefix.prefixes=/smartmeter"
     
     

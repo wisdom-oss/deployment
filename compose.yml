@@ -1,3 +1,5 @@
+name: wisdom
+
 include:
   - services.compose.yml
 
@@ -21,7 +23,7 @@ services:
     volumes:
       - db-data:/home/postgres/pgdata/data
     environment:
-      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+      - POSTGRES_PASSWORD=${PG_PASS:?postgres password required}
       - POSTGRES_DB=${PG_DATABASE:-wisdom}
     secrets:
       - postgres-password
@@ -45,32 +47,28 @@ services:
       start_period: 30s
   
   frontend:
-    build:
-      context: https://github.com/wisdom-oss/frontend-workspace.git#${FRONTEND_BRANCH:-main}
-      dockerfile: Dockerfile
-      args:
-        - OIDC_AUTHORITY=${OIDC_ISSUER:?OpenID Connect Issuer is not configured}
-        - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:?OpenID Connect Client ID is not configured}
+    image: ghcr.io/wisdom-oss/frontend:${FRONTEND_BRANCH:-latest}
     hostname: frontend
     restart: always
 
   backend:
-    image: traefik:v3.1
+    image: traefik:v3
     hostname: backend
     container_name: traefik
     command: 
     - "--providers.docker=true"
     - "--providers.docker.exposedbydefault=false"
+    - "--providers.docker.defaultRule=PathPrefix(`/api/{{ kebabcase .Name }}`)"
+    - "--entryPoints.api.address=:80"
+    - "--entryPoints.api.forwardedHeaders.insecure"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
 configs:
   caddy:
     file: ./configs/Caddyfile
 
-secrets:
-  postgres-password:
-    file: ./.pgpass
-    
+   
 volumes:
   db-data:
     name: wisdom-db

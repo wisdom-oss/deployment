@@ -1,5 +1,9 @@
 {
 	default_bind 0.0.0.0
+	servers {
+		trusted_proxies static private_ranges
+		client_ip_headers X-Forwarded-For X-Real-IP
+	}
 }
 
 :80 {
@@ -16,6 +20,7 @@
 	handle @api {
 		uri strip_prefix /api
 		reverse_proxy backend:80 {
+			flush_interval -1
 			header_up X-Real-IP {remote_host}
 			header_up -X-Authenticated-*
 			header_down -Server

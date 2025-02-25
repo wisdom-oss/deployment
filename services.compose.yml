@@ -4,10 +4,11 @@ x-database-credentials: &dbEnvironment
   PGPASS: ${DATABASE_PASSWORD:?postgres password required}
   PGPORT: ${DATABASE_PORT:-5432}
   PGDATABASE: ${DATABASE_NAME:-wisdom}
+  PGSSLMODE: ${DATABASE_SSL_MODE:-disable}
 
 x-database-dependency: &dbDependency
   db:
-    condition: service_healthy
+    condition: ${DATABASE_REQUIRED_STATE:-service_healthy}
     restart: true
     required: true
 

@@ -151,7 +151,7 @@ cp wisdom.sample.conf wisdom.conf
 [Using an existing database]: ./external-db.md
 
 ```shell
-sed -i "s/DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$(openssl rand -hex 16)/g" wisdom.conf
+sed -i "s/^#DATABASE_PASSWORD=.*/DATABASE_PASSWORD=$(openssl rand -hex 16)/g" wisdom.conf
 ```
 
 ### Configuring OpenID Connect

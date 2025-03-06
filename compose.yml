@@ -1,3 +1,4 @@
+---
 name: wisdom
 
 include:
@@ -70,3 +71,4 @@ configs:
 volumes:
   db-data:
     name: wisdom-db
+...

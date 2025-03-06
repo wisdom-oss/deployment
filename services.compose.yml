@@ -1,3 +1,4 @@
+---
 x-database-credentials: &dbEnvironment
   PGHOST: ${DATABASE_HOST:-db}
   PGUSER: ${DATABASE_USER:-postgres}
@@ -139,3 +140,4 @@ services:
     <<: *extraHosts
     
     
+...

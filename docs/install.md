@@ -7,6 +7,13 @@
 > configuration of the WISdoM platform. The instructions shown here only apply
 > to a clean and freshly installed operating system supported by the platform.
 
+> [!IMPORTANT]
+> The platform requires an external [OpenID Connect] and 
+> [OpenID Connect Discovery] compliant identity provider
+>
+> [OpenID Connect]: https://openid.net/specs/openid-connect-core-1_0.html
+> [OpenID Connect Discovery]: https://openid.net/specs/openid-connect-discovery-1_0.html
+
 > [!NOTE]
 > All commands in this guide require root permissions
 

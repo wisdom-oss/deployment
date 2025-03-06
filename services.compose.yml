@@ -22,7 +22,6 @@ services:
   authentication:
     image: ghcr.io/wisdom-oss/service-user-management:${BACKEND_VERSION:-latest}
     restart: unless-stopped
-    scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency
     environment: 
       <<: *dbEnvironment

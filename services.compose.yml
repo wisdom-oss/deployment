@@ -28,6 +28,7 @@ services:
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:?oidc client id requried}
       OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?oidc client secret requried}
       OIDC_ISSUER: ${OIDC_ISSUER:?oidc issuer not set}
+      REDIS_URI: redis://redis:6379/1
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.authentication.middlewares=authenticationPrefixStrip"

@@ -15,8 +15,10 @@ We use [Docker Compose] as the deployment method as it allows prebuilding the
 
 ## Development Tools
 ### Docker and Docker Compose
-[Install Docker] and [Docker Compose] on your host as pointed out in the 
+Install [Docker Engine] and [Docker Compose] on your host as pointed out in the 
 documentation.
+
+[Docker Engine]: https://docs.docker.com/engine/install/
 
 ## Code Organization
 **Important Files**

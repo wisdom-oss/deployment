@@ -89,7 +89,7 @@ services:
     <<: *extraHosts
 
   usage-history:
-    image: ghcr.io/wisdom-oss/service-usage-history:${BACKEND_VERSION:-latest}
+    image: ghcr.io/wisdom-oss/service-water-usage-history:${BACKEND_VERSION:-latest}
     restart: unless-stopped
     scale: ${SERVICE_REPLICAS:-1}
     depends_on: *dbDependency

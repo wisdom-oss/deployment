@@ -1,7 +1,9 @@
-.vscode
-.env
-wisdom.conf
-docker-compose.override.yml
-docker-compose.override.yaml
-compose.override.yml
-compose.override.yaml
+*
+
+!configs/**
+!docs/**
+!compose.yml
+!CONTRIBUTING.md
+!README.md
+!services.compose.yml
+!wisdom.sample.conf

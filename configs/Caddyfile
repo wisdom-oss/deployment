@@ -34,7 +34,7 @@
 	}
 
 	handle {
-		reverse_proxy frontend:80 {
+		reverse_proxy frontend:5000 {
 			header_down -Server
 		}
 	}

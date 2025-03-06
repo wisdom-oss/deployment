@@ -2,7 +2,7 @@
 x-database-credentials: &dbEnvironment
   PGHOST: ${DATABASE_HOST:-db}
   PGUSER: ${DATABASE_USER:-postgres}
-  PGPASS: ${DATABASE_PASSWORD:?postgres password required}
+  PGPASSWORD: ${DATABASE_PASSWORD:?postgres password required}
   PGPORT: ${DATABASE_PORT:-5432}
   PGDATABASE: ${DATABASE_NAME:-wisdom}
   PGSSLMODE: ${DATABASE_SSL_MODE:-disable}

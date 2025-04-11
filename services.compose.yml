@@ -32,8 +32,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.authentication.middlewares=authenticationPrefixStrip"
-      - "traefik.http.routers.authentication.rule=PathPrefix(`/auth`)"
-      - "traefik.http.middlewares.authenticationPrefixStrip.stripprefix.prefixes=/auth"
+      - "traefik.http.routers.authentication.rule=PathPrefix(`/api/auth`)"
+      - "traefik.http.middlewares.authenticationPrefixStrip.stripprefix.prefixes=/api/auth"
     <<: *extraHosts
     
   geodata:
@@ -45,8 +45,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.geodata.middlewares=geodataPrefixStrip"
-      - "traefik.http.routers.geodata.rule=PathPrefix(`/geodata`)"
-      - "traefik.http.middlewares.geodataPrefixStrip.stripprefix.prefixes=/geodata"  
+      - "traefik.http.routers.geodata.rule=PathPrefix(`/api/geodata`)"
+      - "traefik.http.middlewares.geodataPrefixStrip.stripprefix.prefixes=/api/geodata"  
 
   consumers:
     image: ghcr.io/wisdom-oss/service-consumers:${BACKEND_VERSION:-latest}
@@ -57,8 +57,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.consumers.middlewares=consumersPrefixStrip"
-      - "traefik.http.routers.consumers.rule=PathPrefix(`/consumers`)"
-      - "traefik.http.middlewares.consumersPrefixStrip.stripprefix.prefixes=/consumers"
+      - "traefik.http.routers.consumers.rule=PathPrefix(`/api/consumers`)"
+      - "traefik.http.middlewares.consumersPrefixStrip.stripprefix.prefixes=/api/consumers"
     <<: *extraHosts
 
   water-rights:
@@ -70,8 +70,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.waterRights.middlewares=waterRightsPrefixStrip"
-      - "traefik.http.routers.waterRights.rule=PathPrefix(`/water-rights`)"
-      - "traefik.http.middlewares.waterRightsPrefixStrip.stripprefix.prefixes=/water-rights"
+      - "traefik.http.routers.waterRights.rule=PathPrefix(`/api/water-rights`)"
+      - "traefik.http.middlewares.waterRightsPrefixStrip.stripprefix.prefixes=/api/water-rights"
     <<: *extraHosts
   
   usage-forecasts:
@@ -83,8 +83,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.usageForecasts.middlewares=usageForecastsPrefixStrip"
-      - "traefik.http.routers.usageForecasts.rule=PathPrefix(`/water-usage-forecasts`)"
-      - "traefik.http.middlewares.usageForecastsPrefixStrip.stripprefix.prefixes=/water-usage-forecasts"
+      - "traefik.http.routers.usageForecasts.rule=PathPrefix(`/api/water-usage-forecasts`)"
+      - "traefik.http.middlewares.usageForecastsPrefixStrip.stripprefix.prefixes=/api/water-usage-forecasts"
     <<: *extraHosts
 
   usage-history:
@@ -96,8 +96,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.usageHistory.middlewares=usageHistoryPrefixStrip"
-      - "traefik.http.routers.usageHistory.rule=PathPrefix(`/water-usage-history`)"
-      - "traefik.http.middlewares.usageHistoryPrefixStrip.stripprefix.prefixes=/water-usage-history"
+      - "traefik.http.routers.usageHistory.rule=PathPrefix(`/api/water-usage-history`)"
+      - "traefik.http.middlewares.usageHistoryPrefixStrip.stripprefix.prefixes=/api/water-usage-history"
     <<: *extraHosts
 
   groundwater-levels:
@@ -109,8 +109,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.groundwaterLevels.middlewares=groundwaterLevelsPrefixStrip"
-      - "traefik.http.routers.groundwaterLevels.rule=PathPrefix(`/groundwater-levels`)"
-      - "traefik.http.middlewares.groundwaterLevelsPrefixStrip.stripprefix.prefixes=/groundwater-levels"
+      - "traefik.http.routers.groundwaterLevels.rule=PathPrefix(`/api/groundwater-levels`)"
+      - "traefik.http.middlewares.groundwaterLevelsPrefixStrip.stripprefix.prefixes=/api/groundwater-levels"
     <<: *extraHosts
 
   dwd-proxy:
@@ -122,8 +122,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dwdProxy.middlewares=dwdProxyPrefixStrip"
-      - "traefik.http.routers.dwdProxy.rule=PathPrefix(`/dwd`)"
-      - "traefik.http.middlewares.dwdProxyPrefixStrip.stripprefix.prefixes=/dwd"
+      - "traefik.http.routers.dwdProxy.rule=PathPrefix(`/api/dwd`)"
+      - "traefik.http.middlewares.dwdProxyPrefixStrip.stripprefix.prefixes=/api/dwd"
 
   smartmeters:
     image: ghcr.io/wisdom-oss/service-smartmeter-rest:${BACKEND_VERSION:-latest}
@@ -134,8 +134,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.smartmeter.middlewares=smartmeterPrefixStrip"
-      - "traefik.http.routers.smartmeter.rule=PathPrefix(`/smartmeter`)"
-      - "traefik.http.middlewares.smartmeterPrefixStrip.stripprefix.prefixes=/smartmeter"
+      - "traefik.http.routers.smartmeter.rule=PathPrefix(`/api/smartmeter`)"
+      - "traefik.http.middlewares.smartmeterPrefixStrip.stripprefix.prefixes=/api/smartmeter"
     <<: *extraHosts
     
     

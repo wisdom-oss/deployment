@@ -7,6 +7,11 @@ x-database-credentials: &dbEnvironment
   PGDATABASE: ${DATABASE_NAME:-wisdom}
   PGSSLMODE: ${DATABASE_SSL_MODE:-disable}
 
+x-minio-credentials: &minioCredentials
+  MINIO_ENDPOINT: ${MINIO_HOST:-minio}
+  MINIO_CLIENT_ID: ${MINIO_USER:?minio user required}
+  MINIO_CLIENT_SECRET: ${MINIO_PASSWORD:?minio password required}
+
 x-database-dependency: &dbDependency
   db:
     condition: ${DATABASE_REQUIRED_STATE:-service_healthy}
@@ -137,6 +142,12 @@ services:
       - "traefik.http.routers.smartmeter.rule=PathPrefix(`/api/smartmeter`)"
       - "traefik.http.middlewares.smartmeterPrefixStrip.stripprefix.prefixes=/api/smartmeter"
     <<: *extraHosts
+
+  static-files:
+    image: ghcr.io/wisdom-oss/service-static-files:${BACKEND_VERSION:-latest}
+    restart: unless-stopped
+    scale: ${SERVICE_REPLICAS:-1}
+    environment: *minioCredentials
     
     
 ...

@@ -1,6 +1,8 @@
 *
 
+!configs
 !configs/**
+!docs
 !docs/**
 !compose.yml
 !CONTRIBUTING.md
